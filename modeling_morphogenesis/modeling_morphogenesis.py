@@ -99,3 +99,24 @@ import pyNetLogo
 from SALib.sample import saltelli
 from SALib.analyze import sobol
 
+problem = {
+    'num_vars': 6,
+    'names': ['random-seed',
+              'grass-regrowth-time',
+              'sheep-gain-from-food',
+              'wolf-gain-from-food',
+              'sheep-reproduce',
+              'wolf-reproduce'],
+    'bounds': [[1, 100000],
+               [20., 40.],
+               [2., 8.],
+               [16., 32.],
+               [2., 8.],
+               [2., 8.]]
+}
+
+n = 1000
+param_values = saltelli.sample(problem, n, calc_second_order=True)
+
+param_values.shape
+
