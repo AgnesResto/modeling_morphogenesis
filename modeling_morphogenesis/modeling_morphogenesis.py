@@ -120,3 +120,59 @@ param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 param_values.shape
 
+# import ipyparallel
+#
+# client = ipyparallel.Client()
+# client.ids
+#
+# direct_view = client[:]
+
+# import os
+#
+# #Push the current working directory of the notebook to a "cwd" variable on the engines that can be accessed later
+# direct_view.push(dict(cwd=os.getcwd()))
+#
+# #Push the "problem" variable from the notebook to a corresponding variable on the engines
+# direct_view.push(dict(problem=problem))
+#
+# %%px
+
+import os
+os.chdir('/Users/agnesresto/Documents/NetLogo 6.0.4')
+#
+# import pyNetLogo
+# import pandas as pd
+
+netlogo = pyNetLogo.NetLogoLink(gui=False, netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4')
+netlogo.load_model('./models/Wolf Sheep Predation_v6.nlogo')
+
+def simulation(experiment):
+
+    #Set the input parameters
+    for i, name in enumerate(problem['names']):
+        if name == 'random-seed':
+            #The NetLogo random seed requires a different syntax
+            netlogo.command('random-seed {}'.format(experiment[i]))
+        else:
+            #Otherwise, assume the input parameters are global variables
+            netlogo.command('set {0} {1}'.format(name, experiment[i]))
+
+    netlogo.command('setup')
+    #Run for 100 ticks and return the number of sheep and wolf agents at each time step
+    counts = netlogo.repeat_report(['count sheep','count wolves'], 100)
+
+    results = pd.Series([counts['count sheep'].values.mean(),
+                         counts['count wolves'].values.mean()],
+                        index=['Avg. sheep', 'Avg. wolves'])
+
+    return results
+
+# lview = client.load_balanced_view()
+
+# results = pd.DataFrame(lview.map_sync(simulation, param_values))
+
+results = pd.DataFrame(simulation, param_values)
+
+results.to_csv('./data/Sobol_parallel.csv')
+
+results.head(5)
