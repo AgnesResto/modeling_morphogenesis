@@ -10,6 +10,17 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/modeling_morphogenesis/pyNetLogo-master/pyNetLogo/java/netlogolink/NetLogoLinkV6" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/modeling_morphogenesis/pyNetLogo-master/pyNetLogo/java/netlogolink" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
   <component name="PyDocumentationSettings">
     <option name="renderExternalDocumentation" value="true" />

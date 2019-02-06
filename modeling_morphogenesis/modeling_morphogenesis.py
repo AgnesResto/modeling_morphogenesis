@@ -79,6 +79,7 @@
 
 #Ensuring compliance of code with both python2 and python3
 
+
 from __future__ import division, print_function
 try:
     from itertools import izip as zip
@@ -86,13 +87,22 @@ except ImportError: # will be 3.x series
     pass
 
 import numpy as np
+import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('white')
 sns.set_context('talk')
+import jpype
 
 import pyNetLogo
+import os
+# os.chdir('/Users/agnesresto/Documents/NetLogo 6.0.4')
+
+print(os.environ)
+# os.environ["JAVA\_HOME"] = "/usr/bin/java/jdk1.6.0/ python setup.py install"
+
+# print(os.environ["JAVA\_HOME"]) #makes sure that java home system variable was set correctly
 
 #Import the sampling and analysis modules for a Sobol variance-based
 #sensitivity analysis
@@ -136,14 +146,11 @@ param_values.shape
 # direct_view.push(dict(problem=problem))
 #
 # %%px
-
-import os
-os.chdir('/Users/agnesresto/Documents/NetLogo 6.0.4')
 #
 # import pyNetLogo
 # import pandas as pd
-
-netlogo = pyNetLogo.NetLogoLink(gui=False, netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4')
+netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4') #jvm_home = '/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
+#netlogo = pyNetLogo.NetLogoLink(gui=False, netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4', netlogo_version = '6') #, jvm_home = '/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home'#
 netlogo.load_model('./models/Wolf Sheep Predation_v6.nlogo')
 
 def simulation(experiment):
