@@ -111,7 +111,9 @@ from SALib.analyze import sobol
 
 import pyNetLogo
 netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4')
-netlogo.load_model('./models/Wolf Sheep Predation_v6.nlogo')
+netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Wolf Sheep Predation_v6.nlogo')
+
+
 
 problem = {
     'num_vars': 6,
@@ -129,7 +131,7 @@ problem = {
                [2., 8.]]
 }
 
-n = 1000
+n = 10
 param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 param_values.shape
@@ -215,4 +217,4 @@ elapsed
 
 # results.to_csv('./data/Sobol_parallel.csv')
 
-results.head(5)
+print(results.head(5))
