@@ -187,7 +187,7 @@ results = pd.DataFrame(columns=['Avg. sheep', 'Avg. wolves'])
 
 import time
 
-t0=time.time()
+t0 = time.time()
 
 for run in range(param_values.shape[0]):
 
