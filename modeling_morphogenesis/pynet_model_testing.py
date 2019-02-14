@@ -54,14 +54,17 @@ for run in range(param_values.shape[0]):
             netlogo.command('set {0} {1}'.format(name, param_values[run,i]))
 
     netlogo.command('setup')
+    netlogo.command('go')
     #Run for 100 ticks and return the number of sheep and wolf agents at each time step
-    counts = netlogo.repeat_report(['num-cysts','count cells with [color = green]'], 100)
+    #this isn't working at the moment because it is a reporter at every tick. I only want to see what is at the end.
+    cyst_num = netlogo.report('num-cysts')
+    differentiated = netlogo.report('count cells with [color = green]')
 
     #For each run, save the mean value of the agent counts over time
     #results.loc[run, 'Num Cysts'] = counts['num-cysts'].values.mean()
     #results.loc[run, 'Num Differentiated'] = counts['cells with [color = green]'].values.mean()
-    results.loc[run, 'Num Cysts'] = counts['num-cysts']
-    results.loc[run, 'Num Differentiated'] = counts['cells with [color = green]'].values.mean()
+    results.loc[run, 'Num Cysts'] = cyst_num
+    results.loc[run, 'Num Differentiated'] = differentiated
 
 elapsed=time.time()-t0 #Elapsed runtime in seconds
 
