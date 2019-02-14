@@ -1474,7 +1474,7 @@ CHOOSER
 percent-cells
 percent-cells
 1 2.7 5.4 18
-0
+1
 
 TEXTBOX
 1177
@@ -1515,7 +1515,7 @@ num-cells
 num-cells
 0
 200
-8.0
+9.0
 1
 1
 NIL

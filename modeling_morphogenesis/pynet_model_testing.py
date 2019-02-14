@@ -21,30 +21,23 @@ from SALib.analyze import sobol
 
 import pyNetLogo
 netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4')
-netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Wolf Sheep Predation_v6.nlogo')
+netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv.nlogo')
 
 problem = {
-    'num_vars': 6,
+    'num_vars': 2,
     'names': ['random-seed',
-              'grass-regrowth-time',
-              'sheep-gain-from-food',
-              'wolf-gain-from-food',
-              'sheep-reproduce',
-              'wolf-reproduce'],
+              'num-cells'],
     'bounds': [[1, 100000],
-               [20., 40.],
-               [2., 8.],
-               [16., 32.],
-               [2., 8.],
-               [2., 8.]]
+               [0., 200.]]
 }
 
 n = 10
+
 param_values = saltelli.sample(problem, n, calc_second_order=True)
 
 param_values.shape
 
-results = pd.DataFrame(columns=['Avg. sheep', 'Avg. wolves'])
+results = pd.DataFrame(columns=['Num Cysts', 'Num Differentiated'])
 
 
 t0 = time.time()
@@ -62,11 +55,13 @@ for run in range(param_values.shape[0]):
 
     netlogo.command('setup')
     #Run for 100 ticks and return the number of sheep and wolf agents at each time step
-    counts = netlogo.repeat_report(['count sheep','count wolves'], 100)
+    counts = netlogo.repeat_report(['num-cysts','count cells with [color = green]'], 100)
 
     #For each run, save the mean value of the agent counts over time
-    results.loc[run, 'Avg. sheep'] = counts['count sheep'].values.mean()
-    results.loc[run, 'Avg. wolves'] = counts['count wolves'].values.mean()
+    #results.loc[run, 'Num Cysts'] = counts['num-cysts'].values.mean()
+    #results.loc[run, 'Num Differentiated'] = counts['cells with [color = green]'].values.mean()
+    results.loc[run, 'Num Cysts'] = counts['num-cysts']
+    results.loc[run, 'Num Differentiated'] = counts['cells with [color = green]'].values.mean()
 
 elapsed=time.time()-t0 #Elapsed runtime in seconds
 
