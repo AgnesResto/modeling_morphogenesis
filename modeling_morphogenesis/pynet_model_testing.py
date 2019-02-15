@@ -62,7 +62,7 @@ for run in range(param_values.shape[0]):
     #this isn't working at the moment because it is a reporter at every tick. I only want to see what is at the end.
 
     cyst_num = netlogo.report('num-cysts')
-    cyst_num_int = np.array(cyst_num, dtype=int, ndmin=1)
+    cyst_num_int = np.array(cyst_num, dtype=int, ndmin=2)
 
     differentiated = netlogo.report('count cells with [color = green]')
     pluripotent = netlogo.report('count cells with [color = red]')
@@ -77,11 +77,20 @@ for run in range(param_values.shape[0]):
     # for k, cellnum in enumerate(total_cells_int):
     #     xcor = netlogo.report('[xcor] of cells')
     #     xcor_cell.append()
-    for j, value in enumerate(group_id):
-        if
+    cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1)) #-1 because the last value of cyst_num in netlogo does not count
+    cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1)) #-2 because the count starts at 0
+    for j in range(int(cyst_num_int[0])):
+        n = 0
+        for k, num in enumerate(group_id):
+            if j == num:
+                cir_x[n, j-1] = xcor[k]
+                cir_y[n, j-1] = ycor[k]
+                n = n + 1
+    print(cir_x)
 
-        #xcor_cell.append = netlogo.report('[xcor] of cells with [group-id = {0}]'.format(value))
-        #print(xcor_cell)
+
+    #xcor_cell.append = netlogo.report('[xcor] of cells with [group-id = {0}]'.format(value))
+    #print(xcor_cell)
 
 
     #For each run, save the mean value of the agent counts over time
