@@ -5,6 +5,7 @@ except ImportError: # will be 3.x series
     pass
 
 import numpy as np
+from numpy import array
 import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -31,7 +32,7 @@ problem = {
                [5, 15]]
 }
 
-n = 10
+n = 1
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
 param_values = np.around(param_values_noround, decimals=0)
@@ -39,7 +40,7 @@ param_values.shape
 
 print(param_values)
 
-results = pd.DataFrame(columns=['Num Cysts', 'Num Differentiated'])
+results = pd.DataFrame(columns=['Num Cysts', 'Num Differentiated', 'Num Pluripotent'])
 
 
 t0 = time.time()
@@ -59,14 +60,36 @@ for run in range(param_values.shape[0]):
     netlogo.repeat_command('go', 300)
     #Run for 100 ticks and return the number of sheep and wolf agents at each time step
     #this isn't working at the moment because it is a reporter at every tick. I only want to see what is at the end.
+
     cyst_num = netlogo.report('num-cysts')
+    cyst_num_int = np.array(cyst_num, dtype=int, ndmin=1)
+
     differentiated = netlogo.report('count cells with [color = green]')
+    pluripotent = netlogo.report('count cells with [color = red]')
+    total_cells = netlogo.report('count cells')
+    total_cells_int = np.array(total_cells, dtype=int, ndmin=1)
+
+    print(total_cells_int)
+    xcor = netlogo.report('map [s -> [xcor] of s] sort cells')
+    ycor = netlogo.report('map [s -> [ycor] of s] sort cells')
+    group_id = netlogo.report('map [s -> [group-id] of s] sort cells')
+
+    # for k, cellnum in enumerate(total_cells_int):
+    #     xcor = netlogo.report('[xcor] of cells')
+    #     xcor_cell.append()
+    for j, value in enumerate(group_id):
+        if
+
+        #xcor_cell.append = netlogo.report('[xcor] of cells with [group-id = {0}]'.format(value))
+        #print(xcor_cell)
+
 
     #For each run, save the mean value of the agent counts over time
     #results.loc[run, 'Num Cysts'] = counts['num-cysts'].values.mean()
     #results.loc[run, 'Num Differentiated'] = counts['cells with [color = green]'].values.mean()
     results.loc[run, 'Num Cysts'] = netlogo.report('num-cysts')
     results.loc[run, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
+    results.loc[run, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
 
 elapsed=time.time()-t0 #Elapsed runtime in seconds
 
