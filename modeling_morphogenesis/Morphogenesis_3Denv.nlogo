@@ -1162,7 +1162,6 @@ end
 ;[ask walker
 ;  [move-to active-lumen]
 ;]
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 50
