@@ -5,18 +5,18 @@ except ImportError: # will be 3.x series
     pass
 
 import numpy as np
-from numpy import array
 import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+from shapely.geometry import Polygon
 import seaborn as sns
 sns.set_style('white')
 sns.set_context('talk')
 
 
-#Import the sampling and analysis modules for a Sobol variance-based
-#sensitivity analysis
+# Import the sampling and analysis modules for a Sobol variance-based
+# sensitivity analysis
 from SALib.sample import saltelli
 from SALib.analyze import sobol
 
@@ -47,19 +47,18 @@ t0 = time.time()
 
 for run in range(param_values.shape[0]):
 
-    #Set the input parameters
+    # Set the input parameters
     for i, name in enumerate(problem['names']):
         if name == 'random-seed':
-            #The NetLogo random seed requires a different syntax
+            # The NetLogo random seed requires a different syntax
             netlogo.command('random-seed {}'.format(param_values[run, i]))
         else:
-            #Otherwise, assume the input parameters are global variables
+            # Otherwise, assume the input parameters are global variables
             netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
     netlogo.command('setup')
     netlogo.repeat_command('go', 300)
-    #Run for 100 ticks and return the number of sheep and wolf agents at each time step
-    #this isn't working at the moment because it is a reporter at every tick. I only want to see what is at the end.
+    # Run for 300 ticks to ensure model has finished running.
 
     cyst_num = netlogo.report('num-cysts')
     cyst_num_int = np.array(cyst_num, dtype=int, ndmin=2)
@@ -74,11 +73,12 @@ for run in range(param_values.shape[0]):
     ycor = netlogo.report('map [s -> [ycor] of s] sort cells')
     group_id = netlogo.report('map [s -> [group-id] of s] sort cells')
 
-    # for k, cellnum in enumerate(total_cells_int):
-    #     xcor = netlogo.report('[xcor] of cells')
-    #     xcor_cell.append()
-    cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1)) #-1 because the last value of cyst_num in netlogo does not count
-    cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1)) #-2 because the count starts at 0
+    cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1))
+    cir_x.fill(np.nan)
+    # -1 because the last value of cyst_num in netlogo does not count
+    cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1))
+    cir_y.fill(np.nan)
+
     for j in range(int(cyst_num_int[0])):
         n = 0
         for k, num in enumerate(group_id):
@@ -86,24 +86,28 @@ for run in range(param_values.shape[0]):
                 cir_x[n, j-1] = xcor[k]
                 cir_y[n, j-1] = ycor[k]
                 n = n + 1
-    print(cir_x)
+        # cyst_x = cir_x
+        # cyst_y
+            circle_x = cir_x[:, j-1]
+            tup_corx = circle_x[~np.isnan(circle_x)]
+        #tup_cor = tuple(map(tuple, (cir_x[:,j-1], cir_y[:,j-1])))
 
+        #cyst_area = Polygon([(cir_x[:,:], cir_y[:,:])]).area
+    #(Polygon([(0,0), (4,0), (2,4)]).area)
+    #print(cir_x)
+    #tuple(map(tuple, cir_x))
 
-    #xcor_cell.append = netlogo.report('[xcor] of cells with [group-id = {0}]'.format(value))
-    #print(xcor_cell)
+    #area=feature.geometry().area()
 
-
-    #For each run, save the mean value of the agent counts over time
-    #results.loc[run, 'Num Cysts'] = counts['num-cysts'].values.mean()
-    #results.loc[run, 'Num Differentiated'] = counts['cells with [color = green]'].values.mean()
+    # For each model run, save the number of cysts and number of
+    # differentiated and undifferentiated
     results.loc[run, 'Num Cysts'] = netlogo.report('num-cysts')
     results.loc[run, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
     results.loc[run, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
 
-elapsed=time.time()-t0 #Elapsed runtime in seconds
+elapsed=time.time()-t0 # Elapsed runtime in seconds
 
 elapsed
-
 
 # results = pd.DataFrame(simulation, param_values)
 
