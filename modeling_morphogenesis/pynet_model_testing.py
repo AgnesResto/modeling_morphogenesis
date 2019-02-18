@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import time
 from shapely import geometry
 from shapely.geometry import Polygon
+from matplotlib import pyplot as plt
+from shapely.geometry.polygon import LinearRing, Polygon
 import seaborn as sns
 sns.set_style('white')
 sns.set_context('talk')
@@ -80,6 +82,7 @@ for run in range(param_values.shape[0]):
     cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1))
     cir_y.fill(np.nan)
 
+
     for j in range(int(cyst_num_int[0])):
         n = 0
         pointList = []
@@ -90,19 +93,29 @@ for run in range(param_values.shape[0]):
                 pnt = geometry.Point(xcor[k], ycor[k])
                 pointList.append(pnt)
                 n = n + 1
-        # cyst_x = cir_x
-        # cyst_y
-        circle_x = cir_x[:, j-1]
-        circle_y = cir_y[:, j-1]
+
+        circle_x = cir_x[:, j-1] #row:cell-xcor, column:cyst number
+        circle_y = cir_y[:, j-1] #row:cell-ycor, column:cyst number
         tup_corx = circle_x[~np.isnan(circle_x)]
         tup_cory = circle_y[~np.isnan(circle_y)]
+        print(pointList)
         tup_cor = tuple(map(tuple, (tup_corx, tup_cory)))
-            #cyst_area = Polygon([(tup_corx[:], tup_cory[:])]).area
+        if len(pointList) > 2:
+            print('should be a cyst')
+            poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+            print(poly.wkt)
+            print(poly.area)
+            print(poly.length)
 
+        # if len(pointList) > 0:
+        #     poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+        #     print(poly.wkt)
+        #     print(poly.area)
+        #     print(poly.length)
 
-    poly = geometry.Polygon([[p.x, p.y] for p in pointList])
-    print(poly.wkt)
-    print(poly.area)
+    # x, y = poly.exterior.xy
+    # fig = plt.plot(x,y)
+    # plt.show()
 
         #tup_cor = tuple(map(tuple, (cir_x[:,j-1], cir_y[:,j-1])))
         #poly = geometry.Polygon([[p.x, p.y] for p in pointList])
