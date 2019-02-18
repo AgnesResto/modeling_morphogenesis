@@ -9,6 +9,7 @@ import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+from shapely import geometry
 from shapely.geometry import Polygon
 import seaborn as sns
 sns.set_style('white')
@@ -81,17 +82,31 @@ for run in range(param_values.shape[0]):
 
     for j in range(int(cyst_num_int[0])):
         n = 0
+        pointList = []
         for k, num in enumerate(group_id):
             if j == num:
                 cir_x[n, j-1] = xcor[k]
                 cir_y[n, j-1] = ycor[k]
+                pnt = geometry.Point(xcor[k], ycor[k])
+                pointList.append(pnt)
                 n = n + 1
         # cyst_x = cir_x
         # cyst_y
-            circle_x = cir_x[:, j-1]
-            tup_corx = circle_x[~np.isnan(circle_x)]
-        #tup_cor = tuple(map(tuple, (cir_x[:,j-1], cir_y[:,j-1])))
+        circle_x = cir_x[:, j-1]
+        circle_y = cir_y[:, j-1]
+        tup_corx = circle_x[~np.isnan(circle_x)]
+        tup_cory = circle_y[~np.isnan(circle_y)]
+        tup_cor = tuple(map(tuple, (tup_corx, tup_cory)))
+            #cyst_area = Polygon([(tup_corx[:], tup_cory[:])]).area
 
+
+    poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+    print(poly.wkt)
+    print(poly.area)
+
+        #tup_cor = tuple(map(tuple, (cir_x[:,j-1], cir_y[:,j-1])))
+        #poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+        #print(poly.wkt)
         #cyst_area = Polygon([(cir_x[:,:], cir_y[:,:])]).area
     #(Polygon([(0,0), (4,0), (2,4)]).area)
     #print(cir_x)
