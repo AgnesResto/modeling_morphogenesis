@@ -81,7 +81,10 @@ for run in range(param_values.shape[0]):
     # -1 because the last value of cyst_num in netlogo does not count
     cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1))
     cir_y.fill(np.nan)
-
+    circle_area = np.zeros(int(cyst_num_int[0]))
+    circle_area.fill(np.nan)
+    circle_perimeter = np.zeros(int(cyst_num_int[0]))
+    circle_perimeter.fill(np.nan)
 
     for j in range(int(cyst_num_int[0])):
         n = 0
@@ -103,10 +106,14 @@ for run in range(param_values.shape[0]):
         if len(pointList) > 2:
             print('should be a cyst')
             poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+            circle_area[j-1] = poly.area
+            circle_perimeter[j-1] = poly.length
             print(poly.wkt)
-            print(poly.area)
-            print(poly.length)
 
+    Roundness = np.divide(circle_area, circle_perimeter)
+    Avg_roundness = np.nanmean(Roundness)
+    Avg_area = np.nanmean(circle_area)
+    Avg_perimeter = np.nanmean(circle_perimeter)
         # if len(pointList) > 0:
         #     poly = geometry.Polygon([[p.x, p.y] for p in pointList])
         #     print(poly.wkt)
