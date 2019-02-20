@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 try:
     from itertools import izip as zip
-except ImportError: # will be 3.x series
+except ImportError:  # will be 3.x series
     pass
 
 import numpy as np
@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import time
 from shapely import geometry
 from shapely.geometry import Polygon
-from matplotlib import pyplot as plt
 from shapely.geometry.polygon import LinearRing, Polygon
 import seaborn as sns
 sns.set_style('white')
@@ -43,10 +42,22 @@ param_values.shape
 
 print(param_values)
 
-results = pd.DataFrame(columns=['Num Cysts', 'Num Differentiated', 'Num Pluripotent'])
+results = pd.DataFrame(columns=['Num Cysts', 'Num Differentiated', 'Num Pluripotent', 'Num Differentiated Cysts',
+                                'Num Pluripotent Cysts', 'Num Asymmetric Cysts'])
 
 
 t0 = time.time()
+num_bad_cysts = []
+max_cyst_number = []
+min_cyst_number = []
+avg_cyst_number = []
+min_roundness = []
+max_roundness = []
+avg_roundness = []
+num_pluripotent_cysts = []
+num_differentiated_cysts = []
+num_asymmetric_cysts = []
+total_cyst_number = []
 
 for run in range(param_values.shape[0]):
 
@@ -78,67 +89,105 @@ for run in range(param_values.shape[0]):
 
     cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1))
     cir_x.fill(np.nan)
-    # -1 because the last value of cyst_num in netlogo does not count
+    # -1 because the last value of cyst_num in Netlogo does not count
     cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1))
     cir_y.fill(np.nan)
-    circle_area = np.zeros(int(cyst_num_int[0]))
-    circle_area.fill(np.nan)
-    circle_perimeter = np.zeros(int(cyst_num_int[0]))
-    circle_perimeter.fill(np.nan)
-
+    # circle_area = np.zeros(int(cyst_num_int[0]))
+    # circle_area.fill(np.nan)
+    # circle_perimeter = np.zeros(int(cyst_num_int[0]))
+    # circle_perimeter.fill(np.nan)
+    circle_area = []
+    circle_perimeter = []
+    bad_cysts = 0
+    diff_cyst = 0
+    pluri_cyst = 0
+    asym_cyst = 0
+    good_cyst = 0
+    num_cells_in_cyst = []
     for j in range(int(cyst_num_int[0])):
         n = 0
         pointList = []
-        for k, num in enumerate(group_id):
-            if j == num:
-                cir_x[n, j-1] = xcor[k]
-                cir_y[n, j-1] = ycor[k]
-                pnt = geometry.Point(xcor[k], ycor[k])
-                pointList.append(pnt)
-                n = n + 1
+        cyst_size = netlogo.report('count cells with [group-id = {}]'.format(j))
+        bad_cyst = netlogo.report('count (lumen with [group-id = {0} and any? '
+                                  'lumen in-radius 1.5 with [group-id != {1}]])'.format(j, j))
+        bad_cysts2 = netlogo.report('count (cells with [group-id = {0} and any? '
+                                    'cells in-radius 1.5 with [group-id != {1}]])'.format(j, j))
+        if bad_cyst == 0 and bad_cysts2 == 0 and cyst_size > 0:
+            good_cyst += 1
+            num_cells_in_cyst.append(cyst_size)
+            pluripotent_cells_in_cyst = netlogo.report('count (cells with [group-id = {} and color = red])'.format(j))
+            differentiated_cells_in_cyst = netlogo.report('count (cells with [group-id = {} and color = green])'.format(j))
+            if pluripotent_cells_in_cyst == 0:
+                diff_cyst += 1
+            elif differentiated_cells_in_cyst == 0:
+                pluri_cyst += 1
+            else:
+                bad_asym1 = netlogo.report('count (cells with [group-id = {} and color = red and '
+                                           '(count cells in-radius 1.5 with [color = green] > 1)])'.format(j))
+                bad_asym2 = netlogo.report('count (cells with [group-id = {} and color = green and '
+                                           '(count cells in-radius 1.5 with [color = red] > 1)])'.format(j))
+                if bad_asym1 == 0 and bad_asym2 == 0:
+                    asym_cyst += 1
 
-        circle_x = cir_x[:, j-1] #row:cell-xcor, column:cyst number
-        circle_y = cir_y[:, j-1] #row:cell-ycor, column:cyst number
-        tup_corx = circle_x[~np.isnan(circle_x)]
-        tup_cory = circle_y[~np.isnan(circle_y)]
-        print(pointList)
-        tup_cor = tuple(map(tuple, (tup_corx, tup_cory)))
-        if len(pointList) > 2:
-            print('should be a cyst')
-            poly = geometry.Polygon([[p.x, p.y] for p in pointList])
-            circle_area[j-1] = poly.area
-            circle_perimeter[j-1] = poly.length
-            print(poly.wkt)
+            for k, num in enumerate(group_id):
+                if j == num:
+                    cir_x[n, j-1] = xcor[k]
+                    cir_y[n, j-1] = ycor[k]
+                    pnt = geometry.Point(xcor[k], ycor[k])
+                    pointList.append(pnt)
+                    n = n + 1
 
-    Roundness = np.divide(circle_area, circle_perimeter)
-    Avg_roundness = np.nanmean(Roundness)
-    Avg_area = np.nanmean(circle_area)
-    Avg_perimeter = np.nanmean(circle_perimeter)
-        # if len(pointList) > 0:
-        #     poly = geometry.Polygon([[p.x, p.y] for p in pointList])
-        #     print(poly.wkt)
-        #     print(poly.area)
-        #     print(poly.length)
+            circle_x = cir_x[:, j-1]  # row:cell-xcor, column:cyst number
+            circle_y = cir_y[:, j-1]  # row:cell-ycor, column:cyst number
+            tup_corx = circle_x[~np.isnan(circle_x)]
+            tup_cory = circle_y[~np.isnan(circle_y)]
+            #print(pointList)
+            tup_cor = tuple(map(tuple, (tup_corx, tup_cory)))
 
-    # x, y = poly.exterior.xy
-    # fig = plt.plot(x,y)
-    # plt.show()
+            if len(pointList) > 2:
+                #print('should be a cyst')
+                poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+                circle_perimeter.append(poly.length)
+                circle_area.append(poly.area)
+                # circle_area[j-1] = poly.area
+                # circle_perimeter[j-1] = poly.length
+                # print(poly.wkt)
+        else:
+            bad_cysts += 1
 
-        #tup_cor = tuple(map(tuple, (cir_x[:,j-1], cir_y[:,j-1])))
-        #poly = geometry.Polygon([[p.x, p.y] for p in pointList])
-        #print(poly.wkt)
-        #cyst_area = Polygon([(cir_x[:,:], cir_y[:,:])]).area
-    #(Polygon([(0,0), (4,0), (2,4)]).area)
-    #print(cir_x)
-    #tuple(map(tuple, cir_x))
+    total_cyst_number.append(good_cyst)
+    num_bad_cysts.append(bad_cysts)
+    max_cyst_number.append(np.max(num_cells_in_cyst))
+    min_cyst_number.append(np.min(num_cells_in_cyst))
+    avg_cyst_number.append(np.average(num_cells_in_cyst))
 
-    #area=feature.geometry().area()
+    num_pluripotent_cysts.append(pluri_cyst)
+    num_differentiated_cysts.append(diff_cyst)
+    num_asymmetric_cysts.append(asym_cyst)
+
+    print(num_bad_cysts)
+    square_per = np.square(circle_perimeter)
+    Roundness = np.divide(circle_area, square_per)
+    Avg_round = np.nanmean(Roundness)
+    Max_round = np.max(Roundness)
+    Min_round = np.min(Roundness)
+    #Avg_area = np.nanmean(circle_area)
+    #Avg_perimeter = np.nanmean(circle_perimeter)
+
+    min_roundness.append(Min_round)
+    max_roundness.append(Max_round)
+    avg_roundness.append(Avg_round)
+
+
 
     # For each model run, save the number of cysts and number of
     # differentiated and undifferentiated
-    results.loc[run, 'Num Cysts'] = netlogo.report('num-cysts')
+    results.loc[run, 'Num Cysts'] = total_cyst_number[run]
     results.loc[run, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
     results.loc[run, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
+    results.loc[run, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
+    results.loc[run, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
+    results.loc[run, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
 
 elapsed=time.time()-t0 # Elapsed runtime in seconds
 
@@ -148,7 +197,7 @@ elapsed
 
 # results.to_csv('./data/Sobol_parallel.csv')
 
-print(results.head(5))
+print(results.head(6))
 
 # sns.set_style('white')
 # sns.set_context('talk')

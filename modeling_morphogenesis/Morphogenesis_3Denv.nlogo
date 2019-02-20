@@ -8,6 +8,9 @@ undirected-link-breed [neighbor-links neighbor-link]
 undirected-link-breed [lumen-links lumen-link]
 ;breed [ differentiated diff ]
 
+
+
+
 cells-own [
   neighbors-6
   cycles-matrix-contact ;;counts number of cycles in contact with >= x amount of matrix neighbors
@@ -66,6 +69,7 @@ globals [
 ]
 
 to setup
+  random-seed 21973
   clear-all
   ask cells [set counted? False]
   set ticks-matrix-differentiation 0
@@ -1514,7 +1518,7 @@ num-cells
 num-cells
 0
 200
-9.0
+6.0
 1
 1
 NIL
