@@ -12,6 +12,9 @@ import time
 from shapely import geometry
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import LinearRing, Polygon
+from shapely.wkt import loads as load_wkt
+from shapely.ops import linemerge
+from shapely.geometry import LineString
 import seaborn as sns
 sns.set_style('white')
 sns.set_context('talk')
@@ -136,6 +139,28 @@ for run in range(param_values.shape[0]):
                     pnt = geometry.Point(xcor[k], ycor[k])
                     pointList.append(pnt)
                     n = n + 1
+
+            pointList.append(pointList[0])
+            print(pointList)
+
+            if len(pointList) > 2:
+                # Input LineString: valid, but non-simple
+                line = LineString(pointList)
+                ls = load_wkt('line')
+                assert ls.is_valid and not ls.is_simple
+
+                # Make a simple shape, by finding the intersection with itself
+                sls = ls.intersection(ls)
+                assert sls.is_valid and sls.is_simple
+
+                # If it was a LineString to start with, then attempt to put it back to that type
+                if ls.geom_type == 'LineString' and sls.geom_type == 'MultiLineString':
+                    fls = linemerge(sls)
+                else:
+                    fls = sls
+
+                assert fls.is_valid and fls.is_simple
+                print(fls.wkt)
 
             circle_x = cir_x[:, j-1]  # row:cell-xcor, column:cyst number
             circle_y = cir_y[:, j-1]  # row:cell-ycor, column:cyst number
