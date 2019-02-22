@@ -69,23 +69,18 @@ globals [
 ]
 
 to setup
-  random-seed 21173
   clear-all
   ask cells [set counted? False]
   set ticks-matrix-differentiation 0
   set lumen-num 0
   set num-cysts 1
   set steady-state? False
-;  ask cells [set counted? False]
-;  set ticks-matrix-differentiation 0
   if culture-condition = "embedded"
   [make-embedded-culture]
   if culture-condition = "suspension"
   [make-suspension-culture]
   if culture-condition = "3D-overlay"
   [make-3D-overlay-culture]
-  if culture-condition = "2D-surface"
-  [make-2D-culture]
   if culture-condition = "Glass-3D"
   [make-glass3D]
   reset-ticks
@@ -191,34 +186,6 @@ to make-suspension-culture
     ]
   ]
   ask cells [
-     ;; define neighborhood of patches
-     ifelse pxcor mod 2 = 0 [
-        set neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
-    ][
-        set neighbors-6 turtles-on patches at-points [[0 1] [1 1] [1  0] [0 -1] [-1  0] [-1 1]] ]
-  ]
-end
-
-to make-2D-culture
-  set-default-shape matrix "box"
-  ask patches [
-   sprout 1
-   [ifelse (pycor >= min-pycor and pycor < min-pycor + 2)
-     [set breed matrix
-       set color white]
-     [ifelse pycor = min-pycor + 2
-       [ifelse (percent-cells > random 100)
-       [set breed cells
-        set ss? False
-       set shape atom-shape
-       set color red]
-       [die]]
-       [die]
-      ]
-      if pxcor mod 2 = 0  [ set ycor ycor - 0.5 ]
-    ]
-  ]
-   ask cells [
      ;; define neighborhood of patches
      ifelse pxcor mod 2 = 0 [
         set neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
@@ -364,7 +331,6 @@ to go
     find-cysts
     find-lumen
     make-cyst-id
-;    ask lumen [percolate3]
     make-cell-id
     if all? lumen [group-id > 0]
     [stop]
@@ -747,6 +713,7 @@ ifelse (not any? turtles-on patch-at 0 1 and (any? matrix-on patch-at 1 1 or any
 ]
 end
 
+
 to find-cysts
   ask patches with [not any? turtles-here]
   [ifelse count cells-on patch-neighbors-6 >= 1
@@ -798,197 +765,6 @@ to find-lumen
 ;      ]
 ;    ]
 ;  ]
-end
-
-;to count-cysts
-;   ask lumen [
-;    if lumen-id = 0 [
-;    set lumen-id lumen-num + 1
-;    ask out-link-neighbors [set lumen-id lumen-id]  ]
-;    set lumen-num lumen-num + 1
-;  ]
-;end
-;
- to count-cysts
-  ask lumen [
-    create-lumen-links-with lumen-on lumen-neighbors-6 with [not link-neighbor? myself]
-    [set color orange
-      set thickness 0.3
-    ]
-    if lumen-id = 0 and not any? (link-neighbors with [lumen-id != 0]);; and all? lumen-on out-link-neighbors with [lumen-id = 0]
-    [
-      set lumen-num lumen-num + 1
-      set lumen-id lumen-num
-      if count lumen-on lumen-neighbors-6 >= 1 [
-      ask lumen-on lumen-neighbors-6 [
-        set lumen-id (lumen-num)
-        if count lumen-on lumen-neighbors-6 >= 1 [
-        ask lumen-on lumen-neighbors-6 [
-          set lumen-id (lumen-num)
-          if count lumen-on lumen-neighbors-6 >= 1 [
-          ask lumen-on lumen-neighbors-6 [
-            set lumen-id (lumen-num)
-                if count lumen-on lumen-neighbors-6 >= 1 [
-                 ask lumen-on lumen-neighbors-6
-                    [set lumen-id (lumen-num)
-                      if count lumen-on lumen-neighbors-6 >= 1
-                      [ask lumen-on lumen-neighbors-6
-                      [set lumen-id (lumen-num)
-                        if count lumen-on lumen-neighbors-6 >= 1
-                        [ask lumen-on lumen-neighbors-6
-                        [set lumen-id (lumen-num)]
-                          ]
-                      ]
-                    ]
-                  ]
-                ]
-              ]
-            ]
-          ]
-         ]
-        ]
-      ]
-
-    ]
-
-;    ifelse (lumen-id = 0 and all? lumen-on lumen-neighbors-6 with [lumen-id = 0])
-;    [let lumen-neighbor-id lumen-on lumen-neighbors-6 with [lumen-id = 0]
-;      set lumen-id lumen-id of lumen-neighbor-id]
-;    [ask lumen-on lumen-neighbors-6 [set lumen-id lumen-id of myself]
-;    ]
-;  ]
-  ]
-;      set lumen-num lumen-num + 1
-
-end
-
-to percolate
-  set grid-x-pos min-pxcor
-  while [grid-x-pos <= max-pxcor] [
-    set grid-y-pos max-pycor
-    while [grid-y-pos >= min-pycor]
-    [ if pxcor = grid-x-pos and pycor = grid-y-pos [
-      if (count lumen-here = 1) and (group-id = 0) [
-        ifelse (not any? (link-neighbors with [group-id > 0]))
-        [set color pink
-          set num-cysts num-cysts + 1
-          set group-id num-cysts
-          create-lumen-links-with lumen-on lumen-neighbors-6 with [not link-neighbor? myself]
-          [set color orange
-            set thickness 0.3
-          ]
-        ]
-        [
-          if count lumen-here = 1
-          [let grouped-neighbor any? link-neighbors with [group-id > 0]
-            if grouped-neighbor != nobody
-            [set group-id [group-id] of one-of link-neighbors with [group-id > 0]]
-          ]
-        ]
-      ]
-      ]
-      set grid-y-pos grid-y-pos - 1
-    ]
-    set grid-x-pos grid-x-pos + 1
-  ]
-;  foreach xcor = min-pxcor : 1 : max-pxcor
-end
-
-to percolate2
-  set grid-x-pos min-pxcor
-  while [grid-x-pos <= max-pxcor] [
-    set grid-y-pos max-pycor
-    while [grid-y-pos >= min-pycor] [
-      if pxcor = grid-x-pos and pycor = grid-y-pos [
-        set x_list []
-        set y_list []
-        ask lumen [
-          if count lumen-here >= 1 and group-id = 0 [
-            set group-id num-cysts
-            if count lumen-on lumen-neighbors-6 >= 1
-            [set any-lumen-neighbors? True
-            while [any-lumen-neighbors? = True]
-              [
-                let lumen-neighbors lumen-on lumen-neighbors-6 with [group-id = 0]
-                let lumen-count (count lumen-neighbors)
-                while [lumen-count > 0]
-                [
-                  ask one-of lumen-neighbors with [group-id = 0]
-                  [set group-id num-cysts
-                    ask patches [
-                      set x_list fput pxcor x_list
-                      set y_list fput pycor y_list]
-                  ]
-                  set lumen-count lumen-count - 1
-                ]
-              ]
-            ]
-          ]
-        ]
-      ]
-    ]
-  ]
-
-
-end
-
-
-; to xy_list
-;  set xy_list []
-;  set xy_list fput 0 xy_list ;;populating new list with 0
-;end
-
-to percolate3
-  set x_list []
-  set y_list []
-  set grid-x-pos min-pxcor
-  while [grid-x-pos <= max-pxcor] [
-    set grid-y-pos max-pycor
-    while [grid-y-pos >= min-pycor] [
-      if pxcor = grid-x-pos and pycor = grid-y-pos [
-        set x_list fput pxcor x_list
-        set y_list fput pycor y_list
-        ask lumen [
-          ifelse (group-id = 0) and (count lumen-neighbors-6 = 0)
-          [set group-id num-cysts
-            set color pink
-            set num-cysts num-cysts + 1
-          ]
-          [if group-id = 0 and count lumen-neighbors-6 > 0 [
-            set any-lumen-neighbors? True
-            while [any-lumen-neighbors? = True] [
-              foreach x_list [
-                [x] ->
-                foreach y_list [
-                  [y] ->
-                  set group-id num-cysts
-                  set color pink
-                  let lumen-neighbors lumen-on lumen-neighbors-6 with [group-id = 0]
-                  let lumen-count (count lumen-neighbors)
-                  while [lumen-count > 0] [
-                    ask one-of lumen-neighbors with [group-id = 0]
-                    [set group-id num-cysts
-                      set color pink
-                      set x_list fput pxcor x_list
-                      set y_list fput pycor y_list]
-                    set lumen-count lumen-count - 1
-                  ]
-                  if not any? lumen-neighbors with [count lumen-on lumen-neighbors-6 with [group-id = 0] > 0]
-                    [set any-lumen-neighbors? False
-                      set num-cysts num-cysts + 1
-                  ]
-                ]
-              ]
-            ]
-            ]
-          ]
-        ]
-      ]
-      set grid-y-pos grid-y-pos + 1
-    ]
- set grid-x-pos grid-x-pos + 1
-  ]
-
 end
 
 to walk-up
@@ -1156,13 +932,6 @@ to make-cell-id
     ]
   ]
 end
-
-
-;let active-lumen one-of lumen with [active? = True]
-;if active-lumen != nobody
-;[ask walker
-;  [move-to active-lumen]
-;]
 @#$#@#$#@
 GRAPHICS-WINDOW
 50
@@ -1336,7 +1105,7 @@ CHOOSER
 190
 culture-condition
 culture-condition
-"embedded" "3D-overlay" "2D-surface" "Glass-3D"
+"embedded" "3D-overlay" "Glass-3D"
 0
 
 SLIDER
