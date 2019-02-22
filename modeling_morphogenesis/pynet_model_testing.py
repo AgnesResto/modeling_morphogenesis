@@ -35,14 +35,17 @@ netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Docu
 netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv.nlogo')
 
 problem = {
-    'num_vars': 2,
+    'num_vars': 3,
     'names': ['random-seed',
-              'num-cells'],
+              'num-cells',
+              'num-matrix-diff'],
     'bounds': [[1, 100000],
-               [5, 15]]
+               [5, 15],
+               [1, 6]]
+
 }
 
-n = 1
+n = 2
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
 param_values = np.around(param_values_noround, decimals=0)
@@ -94,6 +97,11 @@ for run in range(param_values.shape[0]):
     xcor = netlogo.report('map [s -> [xcor] of s] sort cells')
     ycor = netlogo.report('map [s -> [ycor] of s] sort cells')
     group_id = netlogo.report('map [s -> [group-id] of s] sort cells')
+    xmax_grid = netlogo.report('max-pxcor')
+    xmin_grid = netlogo.report('min-pxcor')
+    ymax_grid = netlogo.report('max-pycor')
+    ymin_grid = netlogo.report('min-pycor')
+
 
     cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1))
     cir_x.fill(np.nan)
@@ -110,7 +118,7 @@ for run in range(param_values.shape[0]):
     bad_asym_cyst = 0
     good_cyst = 0
     num_cells_in_cyst = []
-    for j in range(int(cyst_num_int[0])):
+    for j in range(1, (int(cyst_num_int[0]))):
         n = 0
         pointList = []
         cyst_size = netlogo.report('count cells with [group-id = {}]'.format(j))
@@ -122,6 +130,10 @@ for run in range(param_values.shape[0]):
         # Eliminate touching cysts where the cells in the boundary are shared
         bad_cysts2 = netlogo.report('count (cells with [group-id = {0} and any? '
                                     'cells in-radius 1.5 with [group-id != {1}]])'.format(j, j))
+        # Eliminate incomplete cysts touching the border
+        bad_cyst4 = netlogo.report('count (cells with [group-id = {} and '
+                                   '(count cells in-radius 1.5 < 2)])'.format(j))
+
         # Test if the cyst has been numbered incorrectly because there is one cyst inside another:
         if pluripotent_cells_in_cyst >= 1 and differentiated_cells_in_cyst >= 1:
             bad_cyst3 = netlogo.report('count (cells with [group-id = {} and color = green and '
@@ -129,7 +141,7 @@ for run in range(param_values.shape[0]):
         else:
             bad_cyst3 = 2
 
-        if bad_cyst == 0 and bad_cysts2 == 0 and bad_cyst3 >= 1 and cyst_size > 0:
+        if bad_cyst == 0 and bad_cysts2 == 0 and bad_cyst4 == 0 and bad_cyst3 >= 1 and cyst_size > 0:
             good_cyst += 1
             num_cells_in_cyst.append(cyst_size)
 
@@ -231,11 +243,11 @@ print(results.head(6))
 #
 # fig.set_size_inches(10,4)
 # fig.subplots_adjust(wspace=0.1)
-# #plt.savefig('JASSS figures/SA - Output distribution.pdf', bbox_inches='tight')
-# #plt.savefig('JASSS figures/SA - Output distribution.png', dpi=300, bbox_inches='tight')
+# plt.savefig('JASSS figures/SA - Output distribution.pdf', bbox_inches='tight')
+# plt.savefig('JASSS figures/SA - Output distribution.png', dpi=300, bbox_inches='tight')
 # plt.show()
-#
-# # %matplotlib
+
+# %matplotlib
 # import scipy
 #
 # nrow=2

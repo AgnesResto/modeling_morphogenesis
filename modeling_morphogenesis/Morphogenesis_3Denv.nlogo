@@ -295,7 +295,7 @@ to go
         set neighbors-6 turtles-on patches at-points [[0 1] [1 1] [1  0] [0 -1] [-1  0] [-1 1]] ]
   ]
     ;;create-cell-links-with cells-on neighbors-6 with [not link-neighbor? myself] [set color white]
-  if (all? cells with [ycor < (max-pycor - 2) and ycor > (min-pycor + 2)] [ss? = True]) [
+  if (all? cells with [ycor < (max-pycor - 2) and ycor > (min-pycor + 2) and xcor > (min-pxcor + 2) and xcor < (max-pycor - 2)] [ss? = True]) [
 
 ;    ask cells [
 ;      ifelse pxcor mod 2 = 0 [
@@ -340,7 +340,7 @@ to go
 end
 
 to assess-state-even
-  if (pxcor mod 2 = 0) and (count cells-here = 1) and (pycor > min-pycor) and (pycor < max-pycor)
+  if (pxcor mod 2 = 0) and (count cells-here = 1) and (pycor > min-pycor) and (pycor < max-pycor) and (pxcor > min-pxcor) and (pxcor < max-pxcor)
   [
     ifelse not any? cells-on neighbors-6
     [ifelse not any? matrix-on neighbors-6
@@ -397,7 +397,7 @@ to assess-state-even
 end
 
 to assess-state-odd
-  if (pxcor mod 2 != 0) and (count cells-here = 1) and (pycor > min-pycor) and (pycor < max-pycor)
+  if (pxcor mod 2 != 0) and (count cells-here = 1) and (pycor > min-pycor) and (pycor < max-pycor) and (pxcor > min-pxcor) and (pxcor < max-pxcor)
   [
     ifelse not any? cells-on neighbors-6
     [ifelse not any? matrix-on neighbors-6
@@ -937,7 +937,7 @@ GRAPHICS-WINDOW
 50
 10
 1038
-1029
+1019
 -1
 -1
 10.0
@@ -947,12 +947,12 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
+0
 0
 1
 -48
 49
--50
+-49
 50
 1
 1
@@ -1162,7 +1162,7 @@ num-matrix-diff
 num-matrix-diff
 1
 6
-2.0
+4.0
 1
 1
 NIL
