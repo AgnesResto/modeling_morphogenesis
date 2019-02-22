@@ -8,6 +8,7 @@ import numpy as np
 import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
+import pylab
 import time
 from shapely import geometry
 from shapely.geometry import Polygon
@@ -15,6 +16,10 @@ from shapely.geometry.polygon import LinearRing, Polygon
 from shapely.wkt import loads as load_wkt
 from shapely.ops import linemerge
 from shapely.geometry import LineString
+from shapely.geometry import Point
+from shapely.geometry import MultiPoint
+import math
+import matplotlib.patches as patches
 import seaborn as sns
 sns.set_style('white')
 sns.set_context('talk')
@@ -101,6 +106,7 @@ for run in range(param_values.shape[0]):
     # circle_perimeter.fill(np.nan)
     circle_area = []
     circle_perimeter = []
+    cyst_roundness = []
     bad_cysts = 0
     diff_cyst = 0
     pluri_cyst = 0
@@ -136,31 +142,51 @@ for run in range(param_values.shape[0]):
                 if j == num:
                     cir_x[n, j-1] = xcor[k]
                     cir_y[n, j-1] = ycor[k]
-                    pnt = geometry.Point(xcor[k], ycor[k])
+                    #pnt = geometry.Point(round(xcor[k], 1), round(ycor[k], 1))
+                    pnt = (round(xcor[k], 1), round(ycor[k], 1))
                     pointList.append(pnt)
                     n = n + 1
 
-            pointList.append(pointList[0])
-            print(pointList)
+            p_list = list(pointList)
 
             if len(pointList) > 2:
                 # Input LineString: valid, but non-simple
-                line = LineString(pointList)
-                ls = load_wkt('line')
-                assert ls.is_valid and not ls.is_simple
+                points = pointList
+                # compute centroid
+                cent=(sum([p[0] for p in points])/len(points),sum([p[1] for p in points])/len(points))
+                # sort by polar angle
+                points.sort(key=lambda p: math.atan2(p[1]-cent[1],p[0]-cent[0]))
+                poly = Polygon(points)
+                # plot points
+                pylab.scatter([p[0] for p in points],[p[1] for p in points])
+                pylab.gca().add_patch(patches.Polygon(points,closed=True,fill=True))
+                pylab.grid()
+                pylab.show()
+                roundness = (4*np.pi*poly.area)/(poly.length*poly.length)
+                cyst_roundness.append(roundness)
+                print(cyst_roundness)
 
-                # Make a simple shape, by finding the intersection with itself
-                sls = ls.intersection(ls)
-                assert sls.is_valid and sls.is_simple
 
-                # If it was a LineString to start with, then attempt to put it back to that type
-                if ls.geom_type == 'LineString' and sls.geom_type == 'MultiLineString':
-                    fls = linemerge(sls)
-                else:
-                    fls = sls
 
-                assert fls.is_valid and fls.is_simple
-                print(fls.wkt)
+                # Change the '' so that it displays LINESTRING(0 0, 0 1,...)
+                # ls = load_wkt(str(line))
+                # assert ls.is_valid and not ls.is_simple
+                #
+                # # Make a simple shape, by finding the intersection with itself
+                # sls = ls.intersection(ls)
+                # assert sls.is_valid and sls.is_simple
+                #
+                # # If it was a LineString to start with, then attempt to put it back to that type
+                # if ls.geom_type == 'LineString' and sls.geom_type == 'MultiLineString':
+                #     fls = linemerge(sls)
+                # else:
+                #     fls = sls
+                #
+                # assert fls.is_valid and fls.is_simple
+                # print(fls.wkt)
+                # pol = line.convex_hull
+                # print(pol.geom_type)
+                # assert pol.is_valid and pol.is_simple
 
             circle_x = cir_x[:, j-1]  # row:cell-xcor, column:cyst number
             circle_y = cir_y[:, j-1]  # row:cell-ycor, column:cyst number
@@ -169,11 +195,11 @@ for run in range(param_values.shape[0]):
             #print(pointList)
             tup_cor = tuple(map(tuple, (tup_corx, tup_cory)))
 
-            if len(pointList) > 2:
-                #print('should be a cyst')
-                poly = geometry.Polygon([[p.x, p.y] for p in pointList])
-                circle_perimeter.append(poly.length)
-                circle_area.append(poly.area)
+            # if len(pointList) > 2:
+            #     #print('should be a cyst')
+            #     poly = geometry.Polygon([[p.x, p.y] for p in pointList])
+            #     circle_perimeter.append(poly.length)
+            #     circle_area.append(poly.area)
                 # circle_area[j-1] = poly.area
                 # circle_perimeter[j-1] = poly.length
                 # print(poly.wkt)
@@ -191,11 +217,11 @@ for run in range(param_values.shape[0]):
     num_asymmetric_cysts.append(asym_cyst)
 
     print(num_bad_cysts)
-    square_per = np.square(circle_perimeter)
-    Roundness = np.divide(circle_area, square_per)
-    Avg_round = np.nanmean(Roundness)
-    Max_round = np.max(Roundness)
-    Min_round = np.min(Roundness)
+    # square_per = np.square(circle_perimeter)
+    # Roundness = np.divide(circle_area, square_per)
+    Avg_round = np.nanmean(cyst_roundness)
+    Max_round = np.max(cyst_roundness)
+    Min_round = np.min(cyst_roundness)
     #Avg_area = np.nanmean(circle_area)
     #Avg_perimeter = np.nanmean(circle_perimeter)
 

@@ -69,7 +69,7 @@ globals [
 ]
 
 to setup
-  random-seed 21973
+  random-seed 21173
   clear-all
   ask cells [set counted? False]
   set ticks-matrix-differentiation 0
@@ -286,24 +286,21 @@ to go
   ]
     if diff-matrix? = True and diff-induction? = True [
       ifelse count matrix-on neighbors-6 >= num-matrix-diff
-      [set cycles-matrix-contact cycles-matrix-contact + 1]
-      [ifelse cycles-matrix-contact = 0
-        [set cycles-matrix-contact 0]
-        [set cycles-matrix-contact cycles-matrix-contact - 1]
-      ]
-      if ticks-matrix-differentiation < max-ticks-differentiation [
-        if color = red [
-          if cycles-matrix-contact >= cycles-diff-matrix [
-            set color green
-            set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+        [set cycles-matrix-contact cycles-matrix-contact + 1]
+        [ifelse cycles-matrix-contact = 0
+          [set cycles-matrix-contact 0]
+          [set cycles-matrix-contact cycles-matrix-contact - 1]
         ]
-      ]
-
+        if color = red [
+          ifelse cycles-matrix-contact >= cycles-diff-matrix
+          [set color green]
+          [set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+        ]
       ifelse count cells-on neighbors-6 with [color = green] >= num-diff-ind and color = red
       [set cycles-diff-contact cycles-diff-contact + 1
       if cycles-diff-contact >= cycles-diff-ind and (count cells in-radius 1.5 with [color = red]) < undiff-num-inhibition
         [set color green]]
-      [if cycles-diff-contact > 0
+      [if color = red and cycles-diff-contact > 0
         [set cycles-diff-contact cycles-diff-contact - 1]
       ]
     ]
@@ -1422,7 +1419,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-7.0
+11.0
 1
 1
 NIL
