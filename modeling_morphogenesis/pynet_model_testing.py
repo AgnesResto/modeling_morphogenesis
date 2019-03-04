@@ -35,13 +35,22 @@ netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Docu
 netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv.nlogo')
 
 problem = {
-    'num_vars': 3,
+    'num_vars': 7,
     'names': ['random-seed',
               'num-cells',
-              'num-matrix-diff'],
+              'num-matrix-diff',
+              'cycles-diff-matrix',
+              'num-diff-ind',
+              'cycles-diff-ind',
+              'undiff-num-inhibition'],
     'bounds': [[1, 100000],
                [5, 15],
-               [1, 6]]
+               [1, 6],
+               [1, 20],
+               [1, 6],
+               [1, 20],
+               [1,6]
+               ]
 
 }
 
