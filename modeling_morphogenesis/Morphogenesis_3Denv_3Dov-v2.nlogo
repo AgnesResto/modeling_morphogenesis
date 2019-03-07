@@ -69,8 +69,9 @@ globals [
 ]
 
 to setup
-  random-seed 89942
+  ;;random-seed 89942
   ;;random-seed 22222
+  random-seed 21973
   clear-all
   if culture-condition = "embedded"
   [make-embedded-culture]
@@ -332,7 +333,7 @@ to new-rules
 ;    set neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
 ;  ][
 ;    set neighbors-6 turtles-on patches at-points [[0 1] [1 1] [1  0] [0 -1] [-1  0] [-1 1]] ]
-  if (pycor > min-pycor) and (pycor < max-pycor) and (pxcor > min-pxcor) and (pxcor < max-pxcor)
+  if (pycor > min-pycor + 1) and (pycor < max-pycor - 1) and (pxcor > min-pxcor + 1) and (pxcor < max-pxcor - 1)
   [
     ifelse count cells-here = 1
     [
@@ -2094,7 +2095,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-3.0
+14.0
 1
 1
 NIL
@@ -2135,7 +2136,7 @@ cycles-diff-ind
 cycles-diff-ind
 1
 20
-4.0
+18.0
 1
 1
 NIL
@@ -2180,7 +2181,7 @@ num-cells
 num-cells
 0
 400
-97.0
+130.0
 1
 1
 NIL
@@ -2195,7 +2196,7 @@ undiff-num-inhibition
 undiff-num-inhibition
 1
 6
-3.0
+1.0
 1
 1
 NIL
@@ -2286,7 +2287,7 @@ CHOOSER
 culture-condition
 culture-condition
 "embedded" "clustered"
-1
+0
 
 SLIDER
 1115
