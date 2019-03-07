@@ -110,6 +110,7 @@ for run in range(param_values.shape[0]):
     print(total_cells_int)
     xcor = netlogo.report('map [s -> [xcor] of s] sort cells')
     ycor = netlogo.report('map [s -> [ycor] of s] sort cells')
+    cell_id = netlogo.report('map [s -> [who] of s] sort cells')
     group_id = netlogo.report('map [s -> [group-id] of s] sort cells')
     xmax_grid = netlogo.report('max-pxcor')
     xmin_grid = netlogo.report('min-pxcor')
@@ -175,8 +176,9 @@ for run in range(param_values.shape[0]):
                 else:
                     bad_asym_cyst += 1
 
+            # add code here to limit this to cells with this group_id and touching lumen
             for k, num in enumerate(group_id):
-                if j == num:
+                if j == num and netlogo.report('[count lumen in-radius 1.5] of cells with [who = {}]'.format(cell_id[k])) > 0:
                     cir_x[n, j-1] = xcor[k]
                     cir_y[n, j-1] = ycor[k]
                     pnt = (round(xcor[k], 1), round(ycor[k], 1))
