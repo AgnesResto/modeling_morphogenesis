@@ -32,12 +32,13 @@ from SALib.analyze import sobol
 
 import pyNetLogo
 netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Documents/NetLogo 6.0.4')
-netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv.nlogo')
+netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv_3Dov-v2.nlogo')
 
 problem = {
-    'num_vars': 7,
+    'num_vars': 8,
     'names': ['random-seed',
               'num-cells',
+              'cluster-size',
               'num-matrix-diff',
               'cycles-diff-matrix',
               'num-diff-ind',
@@ -45,6 +46,7 @@ problem = {
               'undiff-num-inhibition'],
     'bounds': [[1, 100000],
                [5, 15],
+               [0.5, 3],
                [1, 6],
                [1, 20],
                [1, 6],

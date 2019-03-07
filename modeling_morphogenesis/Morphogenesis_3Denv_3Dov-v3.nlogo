@@ -192,44 +192,87 @@ to go
   ifelse steady-state? = False and ticks < 300
   [
 
-  ask cells [
-    if diff-matrix? = True and diff-induction? = False [
-    ifelse count matrix-on neighbors-6 >= num-matrix-diff
-      [set cycles-matrix-contact cycles-matrix-contact + 1]
-      [ifelse cycles-matrix-contact = 0
-        [set cycles-matrix-contact 0]
-        [set cycles-matrix-contact cycles-matrix-contact - 1]
-    ]
-    if ticks-matrix-differentiation < max-ticks-differentiation [
-    if color = red [
-    if cycles-matrix-contact >= cycles-diff-matrix [
-      set color green
-      set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
-    ]
-  ]
-  ]
-    if diff-matrix? = True and diff-induction? = True [
-      ifelse count matrix-on neighbors-6 >= num-matrix-diff
+    ask cells [
+      ifelse diffusion? = False
+      [ if diff-matrix? = True and diff-induction? = False [
+        ifelse count matrix-on neighbors-6 >= num-matrix-diff
         [set cycles-matrix-contact cycles-matrix-contact + 1]
         [ifelse cycles-matrix-contact = 0
           [set cycles-matrix-contact 0]
           [set cycles-matrix-contact cycles-matrix-contact - 1]
         ]
-        if color = red [
-          ifelse cycles-matrix-contact >= cycles-diff-matrix
-          [set color green]
-          [set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+        if ticks-matrix-differentiation < max-ticks-differentiation [
+          if color = red [
+            if cycles-matrix-contact >= cycles-diff-matrix [
+              set color green
+              set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+          ]
         ]
-      ifelse count cells-on neighbors-6 with [color = green] >= num-diff-ind and color = red
-      [set cycles-diff-contact cycles-diff-contact + 1
-      if cycles-diff-contact >= cycles-diff-ind and (count cells in-radius 1.5 with [color = red]) < undiff-num-inhibition
-        [set color green]]
-      [if color = red and cycles-diff-contact > 0
-        [set cycles-diff-contact cycles-diff-contact - 1]
+        ]
+        if diff-matrix? = True and diff-induction? = True [
+          ifelse count matrix-on neighbors-6 >= num-matrix-diff
+          [set cycles-matrix-contact cycles-matrix-contact + 1]
+          [ifelse cycles-matrix-contact = 0
+            [set cycles-matrix-contact 0]
+            [set cycles-matrix-contact cycles-matrix-contact - 1]
+          ]
+          if color = red [
+            ifelse cycles-matrix-contact >= cycles-diff-matrix
+            [set color green]
+            [set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+          ]
+          ifelse count cells-on neighbors-6 with [color = green] >= num-diff-ind and color = red
+          [set cycles-diff-contact cycles-diff-contact + 1
+            if cycles-diff-contact >= cycles-diff-ind and (count cells in-radius 1.5 with [color = red]) < undiff-num-inhibition
+            [set color green]]
+          [if color = red and cycles-diff-contact > 0
+            [set cycles-diff-contact cycles-diff-contact - 1]
+          ]
+        ]
+      ]
+      [if diffusion? = True
+        [
+          if diff-matrix? = True and diff-induction? = False
+          [
+            ifelse count matrix-on neighbors-6 >= num-matrix-diff
+            [set cycles-matrix-contact cycles-matrix-contact + 1]
+            [ifelse cycles-matrix-contact = 0
+              [set cycles-matrix-contact 0]
+              [set cycles-matrix-contact cycles-matrix-contact - 1]
+            ]
+            if ticks-matrix-differentiation < max-ticks-differentiation
+            [
+              if color = red [
+                if cycles-matrix-contact >= cycles-diff-matrix ;; and diffused inhibitor < threshold
+                [
+                  set color green
+                  set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+              ]
+            ]
+          ]
+          if diff-matrix? = True and diff-induction? = True [
+            ifelse count matrix-on neighbors-6 >= num-matrix-diff
+            [set cycles-matrix-contact cycles-matrix-contact + 1]
+            [ifelse cycles-matrix-contact = 0
+              [set cycles-matrix-contact 0]
+              [set cycles-matrix-contact cycles-matrix-contact - 1]
+            ]
+            if color = red [
+              ifelse cycles-matrix-contact >= cycles-diff-matrix ;; and diffused inhibitor < threshold
+              [set color green]
+              [set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+            ]
+            ifelse count cells-on neighbors-6 with [color = green] >= num-diff-ind and color = red
+            [set cycles-diff-contact cycles-diff-contact + 1
+              if cycles-diff-contact >= cycles-diff-ind ;; and diffused inhibitor < threshold
+              [set color green]]
+            [if color = red and cycles-diff-contact > 0
+              [set cycles-diff-contact cycles-diff-contact - 1]
+            ]
+          ]
+        ]
       ]
     ]
-  ]
-
 
     ifelse rule-set = "Original"
     [
@@ -2198,7 +2241,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-2.0
+1.0
 1
 1
 NIL
@@ -2406,6 +2449,17 @@ cluster-size
 1
 NIL
 HORIZONTAL
+
+SWITCH
+1185
+605
+1302
+638
+diffusion?
+diffusion?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

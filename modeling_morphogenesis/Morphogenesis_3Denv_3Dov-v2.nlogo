@@ -275,7 +275,7 @@ to go
     ]
 
     ;;create-cell-links-with cells-on neighbors-6 with [not link-neighbor? myself] [set color white]
-  if (all? cells with [ycor < (max-pycor - 2) and ycor > (min-pycor + 2) and xcor > (min-pxcor + 2) and xcor < (max-pycor - 2)] [ss? = True]) [
+  if ((all? cells with [ycor < (max-pycor - 2) and ycor > (min-pycor + 2) and xcor > (min-pxcor + 2) and xcor < (max-pycor - 2)] [ss? = True]) or (ticks >= 300)) [
 
 ;    ask cells [
 ;      ifelse pxcor mod 2 = 0 [
@@ -2296,8 +2296,8 @@ SLIDER
 cluster-size
 cluster-size
 0.5
-2
-2.0
+4
+1.5
 0.5
 1
 NIL
