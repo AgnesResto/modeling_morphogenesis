@@ -35,9 +35,10 @@ netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Docu
 netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv_3Dov-v2.nlogo')
 
 problem = {
-    'num_vars': 7,
+    'num_vars': 8,
     'names': ['random-seed',
               'num-cells',
+              'max-divisions',
               'num-matrix-diff',
               'cycles-diff-matrix',
               'num-diff-ind',
@@ -45,6 +46,7 @@ problem = {
               'undiff-num-inhibition'],
     'bounds': [[1, 100000],
                [100, 400],
+               [1, 4],
                [1, 6],
                [1, 20],
                [1, 6],
@@ -78,9 +80,9 @@ num_pluripotent_cysts = []
 num_differentiated_cysts = []
 num_asymmetric_cysts = []
 total_cyst_number = []
+# run_num = 0 # use this to index results in case there are some runs with no cyst formation
 
 for run in range(param_values.shape[0]):
-
     # Set the input parameters
     for i, name in enumerate(problem['names']):
         if name == 'random-seed':
@@ -91,10 +93,11 @@ for run in range(param_values.shape[0]):
             netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
     netlogo.command('set Rule-set "New"')
+    netlogo.command('set culture-condition "embedded"')
     netlogo.command('set cluster-size 1.5')
     netlogo.command('setup')
     netlogo.repeat_command('go', 350)
-    # Run for 300 ticks to ensure model has finished running.
+    # Run for 350 ticks to ensure model has finished running.
 
     cyst_num = netlogo.report('num-cysts')
     cyst_num_int = np.array(cyst_num, dtype=int, ndmin=2)
@@ -203,6 +206,34 @@ for run in range(param_values.shape[0]):
 
         else:
             bad_cysts += 1
+
+    if len(num_cells_in_cyst) == 0:
+        total_cyst_number.append(np.nan)
+        num_bad_cysts.append(np.nan)
+        max_cyst_number.append(np.nan)
+        min_cyst_number.append(np.nan)
+        avg_cyst_number.append(np.nan)
+
+        num_pluripotent_cysts.append(np.nan)
+        num_differentiated_cysts.append(np.nan)
+        num_asymmetric_cysts.append(np.nan)
+
+        Avg_round = np.nan
+        Max_round = np.nan
+        Min_round = np.nan
+
+        min_roundness.append(Min_round)
+        max_roundness.append(Max_round)
+        avg_roundness.append(Avg_round)
+
+        results.loc[run, 'Num Cysts'] = total_cyst_number[run]
+        results.loc[run, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
+        results.loc[run, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
+        results.loc[run, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
+        results.loc[run, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
+        results.loc[run, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
+
+        continue
 
     total_cyst_number.append(good_cyst)
     num_bad_cysts.append(bad_cysts)

@@ -71,7 +71,8 @@ globals [
 to setup
   ;;random-seed 89942
   ;;random-seed 22222
-  random-seed 21973
+  ;;random-seed 21973
+  ;;random-seed 50098
   clear-all
   if culture-condition = "embedded"
   [make-embedded-culture]
@@ -201,13 +202,11 @@ to go
         [set cycles-matrix-contact 0]
         [set cycles-matrix-contact cycles-matrix-contact - 1]
     ]
-    if ticks-matrix-differentiation < max-ticks-differentiation [
     if color = red [
     if cycles-matrix-contact >= cycles-diff-matrix [
-      set color green
-      set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+      set color green]
     ]
-  ]
+
   ]
     if diff-matrix? = True and diff-induction? = True [
       ifelse count matrix-on neighbors-6 >= num-matrix-diff
@@ -2106,7 +2105,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-14.0
+6.0
 1
 1
 NIL
@@ -2132,7 +2131,7 @@ num-diff-ind
 num-diff-ind
 0
 6
-2.0
+6.0
 1
 1
 NIL
@@ -2147,7 +2146,7 @@ cycles-diff-ind
 cycles-diff-ind
 1
 20
-5.0
+2.0
 1
 1
 NIL
@@ -2192,7 +2191,7 @@ num-cells
 num-cells
 0
 400
-130.0
+125.0
 1
 1
 NIL
@@ -2207,7 +2206,7 @@ undiff-num-inhibition
 undiff-num-inhibition
 1
 6
-1.0
+5.0
 1
 1
 NIL
@@ -2259,7 +2258,7 @@ max-ticks-differentiation
 max-ticks-differentiation
 0
 20
-2.0
+15.0
 1
 1
 NIL
@@ -2284,7 +2283,7 @@ max-divisions
 max-divisions
 1
 5
-1.0
+2.0
 1
 1
 NIL
@@ -2309,7 +2308,7 @@ cluster-size
 cluster-size
 0.5
 4
-1.5
+2.5
 0.5
 1
 NIL

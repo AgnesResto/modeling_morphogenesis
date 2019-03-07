@@ -202,13 +202,11 @@ to go
           [set cycles-matrix-contact 0]
           [set cycles-matrix-contact cycles-matrix-contact - 1]
         ]
-        if ticks-matrix-differentiation < max-ticks-differentiation [
           if color = red [
             if cycles-matrix-contact >= cycles-diff-matrix [
-              set color green
-              set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+              set color green]
           ]
-        ]
+
         ]
         if diff-matrix? = True and diff-induction? = True [
           ifelse count matrix-on neighbors-6 >= num-matrix-diff
@@ -377,6 +375,7 @@ to go
     make-cyst-id
     make-cell-id
     propagate-id
+    propagate-again
     if all? lumen [group-id > 0]
     [stop]
     ]
@@ -2021,6 +2020,16 @@ to propagate-id
   ask cells
   [
     ask cells-on neighbors-6
+    [
+      set group-id [group-id] of myself
+    ]
+  ]
+end
+
+to propagate-again
+  ask cells with [group-id > 0]
+  [
+    ask (cells-on neighbors-6) with [group-id = 0]
     [
       set group-id [group-id] of myself
     ]
