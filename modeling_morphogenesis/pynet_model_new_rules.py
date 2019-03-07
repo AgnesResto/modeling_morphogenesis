@@ -35,18 +35,16 @@ netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Docu
 netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv_3Dov-v2.nlogo')
 
 problem = {
-    'num_vars': 8,
+    'num_vars': 7,
     'names': ['random-seed',
               'num-cells',
-              'cluster-size',
               'num-matrix-diff',
               'cycles-diff-matrix',
               'num-diff-ind',
               'cycles-diff-ind',
               'undiff-num-inhibition'],
     'bounds': [[1, 100000],
-               [5, 15],
-               [0.5, 3],
+               [100, 400],
                [1, 6],
                [1, 20],
                [1, 6],
@@ -56,10 +54,10 @@ problem = {
 
 }
 
-n = 2
+n = 1
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
-param_values = np.around(param_values_noround, decimals=1)
+param_values = np.around(param_values_noround, decimals=0)
 param_values.shape
 
 print(param_values)
@@ -92,8 +90,10 @@ for run in range(param_values.shape[0]):
             # Otherwise, assume the input parameters are global variables
             netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
+    netlogo.command('set Rule-set "New"')
+    netlogo.command('set cluster-size 1.5')
     netlogo.command('setup')
-    netlogo.repeat_command('go', 301)
+    netlogo.repeat_command('go', 350)
     # Run for 300 ticks to ensure model has finished running.
 
     cyst_num = netlogo.report('num-cysts')

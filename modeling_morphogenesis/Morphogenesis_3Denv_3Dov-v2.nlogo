@@ -314,6 +314,7 @@ to go
     make-cyst-id
     make-cell-id
     propagate-id
+    propagate-again
     if all? lumen [group-id > 0]
     [stop]
     ]
@@ -1871,9 +1872,19 @@ to make-cell-id
 end
 
 to propagate-id
-  ask cells
+  ask cells with [group-id > 0]
   [
-    ask cells-on neighbors-6
+    ask (cells-on neighbors-6) with [group-id = 0]
+    [
+      set group-id [group-id] of myself
+    ]
+  ]
+end
+
+to propagate-again
+  ask cells with [group-id > 0]
+  [
+    ask (cells-on neighbors-6) with [group-id = 0]
     [
       set group-id [group-id] of myself
     ]
@@ -2136,7 +2147,7 @@ cycles-diff-ind
 cycles-diff-ind
 1
 20
-18.0
+5.0
 1
 1
 NIL
@@ -2273,7 +2284,7 @@ max-divisions
 max-divisions
 1
 5
-2.0
+1.0
 1
 1
 NIL
