@@ -35,9 +35,10 @@ netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Docu
 netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv_3Dov-v2.nlogo')
 
 problem = {
-    'num_vars': 7,
+    'num_vars': 8,
     'names': [  # 'random-seed',
               'num-cells',
+              'cluster-size',
               'max-divisions',
               'num-matrix-diff',
               'cycles-diff-matrix',
@@ -46,7 +47,8 @@ problem = {
               'undiff-num-inhibition'],
     'bounds': [  # [1, 100000],
                [10, 100],
-               [1, 3],
+               [1, 2.1],
+               [1, 2],
                [1, 6],
                [1, 10],
                [1, 6],
@@ -64,10 +66,10 @@ param_values.shape
 
 print(param_values)
 
-results = pd.DataFrame(columns=['num-cells', 'max-divisions', 'num-matrix-diff', 'cycles-diff-matrix', 'num-diff-ind', 'cycles-diff-ind',
+results = pd.DataFrame(columns=['num-cells', 'cluster-size', 'max-divisions', 'num-matrix-diff', 'cycles-diff-matrix', 'num-diff-ind', 'cycles-diff-ind',
                                 'undiff-num-inhibition', 'Num Cysts', 'Num Differentiated', 'Num Pluripotent', 'Num Differentiated Cysts',
                                 'Num Pluripotent Cysts', 'Num Asymmetric Cysts'])
-good_results = pd.DataFrame(columns=['num-cells', 'max-divisions', 'num-matrix-diff', 'cycles-diff-matrix', 'num-diff-ind', 'cycles-diff-ind',
+good_results = pd.DataFrame(columns=['num-cells', 'cluster-size', 'max-divisions', 'num-matrix-diff', 'cycles-diff-matrix', 'num-diff-ind', 'cycles-diff-ind',
                                      'undiff-num-inhibition', 'Num Cysts', 'Num Differentiated', 'Num Pluripotent', 'Num Differentiated Cysts',
                                      'Num Pluripotent Cysts', 'Num Asymmetric Cysts'])
 
@@ -101,7 +103,7 @@ for run in range(param_values.shape[0]):
 
     netlogo.command('set Rule-set "New"')
     netlogo.command('set culture-condition "clustered"')
-    netlogo.command('set cluster-size 1')
+    #netlogo.command('set cluster-size 1')
     netlogo.command('random-seed 21973')
     netlogo.command('setup')
     netlogo.repeat_command('go', 350)
@@ -237,6 +239,7 @@ for run in range(param_values.shape[0]):
         avg_roundness.append(Avg_round)
 
         results.loc[run, 'num-cells'] = netlogo.report('num-cells')
+        results.loc[run, 'cluster-size'] = netlogo.report('cluster-size')
         results.loc[run, 'max-divisions'] = netlogo.report('max-divisions')
         results.loc[run, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
         results.loc[run, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
@@ -279,6 +282,7 @@ for run in range(param_values.shape[0]):
 
     # For each model run, give these results:
     results.loc[run, 'num-cells'] = netlogo.report('num-cells')
+    results.loc[run, 'cluster-size'] = netlogo.report('cluster-size')
     results.loc[run, 'max-divisions'] = netlogo.report('max-divisions')
     results.loc[run, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
     results.loc[run, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
@@ -292,8 +296,14 @@ for run in range(param_values.shape[0]):
     results.loc[run, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
     results.loc[run, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
 
-    if num_asymmetric_cysts[run] > 0:
+    plating_density = netlogo.report('num-cells')
+    clusters = netlogo.report('cluster-size')
+    percentage_pluripotent = num_pluripotent_cysts[run]/total_cyst_number[run]*100
+    percentage_differentiated = num_differentiated_cysts[run]/total_cyst_number[run]*100
+
+    if num_asymmetric_cysts[run] > 0 or (percentage_pluripotent >= 90 and clusters == 1) or (percentage_differentiated >= 90 and clusters == 2):
         good_results.loc[run_num, 'num-cells'] = netlogo.report('num-cells')
+        good_results.loc[run_num, 'cluster-size'] = netlogo.report('cluster-size')
         good_results.loc[run_num, 'max-divisions'] = netlogo.report('max-divisions')
         good_results.loc[run_num, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
         good_results.loc[run_num, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
@@ -320,9 +330,9 @@ elapsed
 
 print(results.head(6))
 
-results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered1_21973_lowcycle.csv')
+results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered1_21973_1_10_cycle.csv')
 
-good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered1_21973_lowcycle.csv')
+good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered1_21973_1_10_cycle.csv')
 # sns.set_style('white')
 # sns.set_context('talk')
 # fig, ax = plt.subplots(1,len(results.columns), sharey=True)

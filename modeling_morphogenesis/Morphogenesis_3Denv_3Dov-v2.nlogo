@@ -71,7 +71,7 @@ globals [
 to setup
   ;;random-seed 89942
   ;;random-seed 22222
-  random-seed 21973
+  ;; random-seed 21973
   ;;random-seed 50098
   ;;random-seed 25098
   clear-all
@@ -2106,7 +2106,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-3.0
+2.0
 1
 1
 NIL
@@ -2192,7 +2192,7 @@ num-cells
 num-cells
 0
 400
-41.0
+91.0
 1
 1
 NIL
@@ -2207,7 +2207,7 @@ undiff-num-inhibition
 undiff-num-inhibition
 1
 6
-5.0
+3.0
 1
 1
 NIL
