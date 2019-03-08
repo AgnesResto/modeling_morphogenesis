@@ -71,8 +71,9 @@ globals [
 to setup
   ;;random-seed 89942
   ;;random-seed 22222
-  ;;random-seed 21973
+  random-seed 21973
   ;;random-seed 50098
+  ;;random-seed 25098
   clear-all
   if culture-condition = "embedded"
   [make-embedded-culture]
@@ -2105,7 +2106,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-6.0
+3.0
 1
 1
 NIL
@@ -2131,7 +2132,7 @@ num-diff-ind
 num-diff-ind
 0
 6
-6.0
+2.0
 1
 1
 NIL
@@ -2191,7 +2192,7 @@ num-cells
 num-cells
 0
 400
-125.0
+41.0
 1
 1
 NIL
@@ -2283,7 +2284,7 @@ max-divisions
 max-divisions
 1
 5
-4.0
+2.0
 1
 1
 NIL
@@ -2297,18 +2298,18 @@ CHOOSER
 culture-condition
 culture-condition
 "embedded" "clustered"
-0
+1
 
 SLIDER
-1115
-35
-1287
-68
+1185
+30
+1357
+63
 cluster-size
 cluster-size
 0.5
 4
-1.5
+1.0
 0.5
 1
 NIL
