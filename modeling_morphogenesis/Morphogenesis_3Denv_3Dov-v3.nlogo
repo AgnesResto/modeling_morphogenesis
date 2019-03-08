@@ -2251,7 +2251,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-2.0
+6.0
 1
 1
 NIL
@@ -2277,7 +2277,7 @@ num-diff-ind
 num-diff-ind
 0
 6
-1.0
+6.0
 1
 1
 NIL
@@ -2292,7 +2292,7 @@ cycles-diff-ind
 cycles-diff-ind
 1
 20
-4.0
+2.0
 1
 1
 NIL
@@ -2337,7 +2337,7 @@ num-cells
 num-cells
 0
 400
-265.0
+127.0
 1
 1
 NIL
@@ -2352,7 +2352,7 @@ undiff-num-inhibition
 undiff-num-inhibition
 1
 6
-3.0
+5.0
 1
 1
 NIL
@@ -2429,7 +2429,7 @@ max-divisions
 max-divisions
 1
 5
-1.0
+3.0
 1
 1
 NIL
@@ -2443,7 +2443,7 @@ CHOOSER
 culture-condition
 culture-condition
 "embedded" "clustered"
-0
+1
 
 SLIDER
 1115

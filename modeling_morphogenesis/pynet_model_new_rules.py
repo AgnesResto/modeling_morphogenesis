@@ -45,8 +45,8 @@ problem = {
               'cycles-diff-ind',
               'undiff-num-inhibition'],
     'bounds': [[1, 100000],
-               [100, 400],
-               [1, 4],
+               [10, 100],
+               [1, 3],
                [1, 6],
                [1, 20],
                [1, 6],
@@ -94,7 +94,7 @@ for run in range(param_values.shape[0]):
 
     netlogo.command('set Rule-set "New"')
     netlogo.command('set culture-condition "clustered"')
-    netlogo.command('set cluster-size 1.5')
+    netlogo.command('set cluster-size 1')
     netlogo.command('setup')
     netlogo.repeat_command('go', 350)
     # Run for 350 ticks to ensure model has finished running.
@@ -204,7 +204,6 @@ for run in range(param_values.shape[0]):
                 circle_area.append(poly.area)
                 circle_perimeter.append(poly.length)
                 cyst_roundness.append(roundness)
-                print(cyst_roundness)
 
         else:
             bad_cysts += 1
