@@ -54,7 +54,7 @@ problem = {
 
 }
 
-n = 2
+n = 5
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
 param_values = np.around(param_values_noround, decimals=1)
@@ -239,6 +239,8 @@ elapsed
 # results.to_csv('./data/Sobol_parallel.csv')
 
 print(results.head(6))
+
+results.to_csv('results.csv')
 
 # sns.set_style('white')
 # sns.set_context('talk')

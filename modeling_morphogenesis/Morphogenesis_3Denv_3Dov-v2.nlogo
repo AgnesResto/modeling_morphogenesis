@@ -2283,7 +2283,7 @@ max-divisions
 max-divisions
 1
 5
-2.0
+4.0
 1
 1
 NIL
@@ -2308,7 +2308,7 @@ cluster-size
 cluster-size
 0.5
 4
-2.5
+1.5
 0.5
 1
 NIL

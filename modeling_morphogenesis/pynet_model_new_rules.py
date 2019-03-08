@@ -56,7 +56,7 @@ problem = {
 
 }
 
-n = 1
+n = 5
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
 param_values = np.around(param_values_noround, decimals=0)
@@ -93,7 +93,7 @@ for run in range(param_values.shape[0]):
             netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
     netlogo.command('set Rule-set "New"')
-    netlogo.command('set culture-condition "embedded"')
+    netlogo.command('set culture-condition "clustered"')
     netlogo.command('set cluster-size 1.5')
     netlogo.command('setup')
     netlogo.repeat_command('go', 350)
@@ -224,6 +224,7 @@ for run in range(param_values.shape[0]):
         Max_round = np.nan
         Min_round = np.nan
 
+
         min_roundness.append(Min_round)
         max_roundness.append(Max_round)
         avg_roundness.append(Avg_round)
@@ -249,13 +250,18 @@ for run in range(param_values.shape[0]):
 
     print(num_bad_cysts)
 
-    Avg_round = np.nanmean(cyst_roundness)
-    Max_round = np.max(cyst_roundness)
-    Min_round = np.min(cyst_roundness)
+    if len(cyst_roundness) > 0:
+        Avg_round = np.nanmean(cyst_roundness)
+        Max_round = np.max(cyst_roundness)
+        Min_round = np.min(cyst_roundness)
 
-    min_roundness.append(Min_round)
-    max_roundness.append(Max_round)
-    avg_roundness.append(Avg_round)
+        min_roundness.append(Min_round)
+        max_roundness.append(Max_round)
+        avg_roundness.append(Avg_round)
+    else:
+        min_roundness.append(np.nan)
+        max_roundness.append(np.nan)
+        avg_roundness.append(np.nan)
 
     # For each model run, give these results:
     results.loc[run, 'Num Cysts'] = total_cyst_number[run]
@@ -275,6 +281,9 @@ elapsed
 
 print(results.head(6))
 
+results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_newrules_clustered.csv')
+param_dataframe = pd.DataFrame(data = param_values)
+param_dataframe.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/parameters_newrules_clustered.csv')
 # sns.set_style('white')
 # sns.set_context('talk')
 # fig, ax = plt.subplots(1,len(results.columns), sharey=True)
