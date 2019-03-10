@@ -71,7 +71,7 @@ globals [
 to setup
   ;;random-seed 89942
   ;;random-seed 22222
-  ;; random-seed 21973
+  random-seed 21973
   ;;random-seed 50098
   ;;random-seed 25098
   clear-all
@@ -2132,7 +2132,7 @@ num-diff-ind
 num-diff-ind
 0
 6
-2.0
+1.0
 1
 1
 NIL
@@ -2192,7 +2192,7 @@ num-cells
 num-cells
 0
 400
-91.0
+94.0
 1
 1
 NIL

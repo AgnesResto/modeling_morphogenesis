@@ -48,9 +48,9 @@ problem = {
                [10, 100],
                [1, 2],
                [1, 5],
-               [1, 10],
+               [6, 10],
                [1, 5],
-               [1, 10],
+               [6, 10],
                [1, 6]
                ]
 
@@ -302,7 +302,7 @@ for run in range(param_values.shape[0]):
         percentage_pluripotent = num_pluripotent_cysts[run]/total_cyst_number[run]*100
         percentage_differentiated = num_differentiated_cysts[run]/total_cyst_number[run]*100
 
-        if num_asymmetric_cysts[run_count] > 0 or (percentage_pluripotent >= 90 and clusters == 1) or (percentage_differentiated >= 90 and clusters == 2):
+        if num_asymmetric_cysts[run_count] > 0 or (percentage_pluripotent >= 80 and clusters == 2) or (percentage_differentiated >= 80 and clusters == 1):
             good_results.loc[run_num, 'num-cells'] = netlogo.report('num-cells')
             good_results.loc[run_num, 'cluster-size'] = netlogo.report('cluster-size')
             good_results.loc[run_num, 'max-divisions'] = netlogo.report('max-divisions')
@@ -333,9 +333,9 @@ elapsed
 
 print(results.head(6))
 
-# results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered1_21973_1_10_cycle_3_div.csv')
+results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered_21973_6_10_cycle_nested.csv')
 
-# good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered1_21973_1_10_cycle_3_div.csv')
+good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered_21973_6_10_cycle_nested.csv')
 
 
 # sns.set_style('white')
