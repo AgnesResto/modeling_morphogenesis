@@ -35,10 +35,9 @@ netlogo = pyNetLogo.NetLogoLink(gui=False,netlogo_home = '/Users/agnesresto/Docu
 netlogo.load_model('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/Morphogenesis_3Denv_3Dov-v2.nlogo')
 
 problem = {
-    'num_vars': 8,
+    'num_vars': 7,
     'names': [  # 'random-seed',
               'num-cells',
-              'cluster-size',
               'max-divisions',
               'num-matrix-diff',
               'cycles-diff-matrix',
@@ -47,21 +46,20 @@ problem = {
               'undiff-num-inhibition'],
     'bounds': [  # [1, 100000],
                [10, 100],
-               [1, 2.1],
                [1, 2],
-               [1, 6],
+               [1, 5],
                [1, 10],
-               [1, 6],
+               [1, 5],
                [1, 10],
                [1, 6]
                ]
 
 }
 
-n = 20
+n = 30
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
-param_values = np.around(param_values_noround, decimals=0)
+param_values = np.around(param_values_noround, decimals=1)
 param_values.shape
 
 print(param_values)
@@ -89,6 +87,8 @@ num_asymmetric_cysts = []
 total_cyst_number = []
 # run_num = 0 # use this to index results in case there are some runs with no cyst formation
 run_num = 0
+run_count = 0
+cluster_size = [1, 1.5, 2, 2.5]
 
 for run in range(param_values.shape[0]):
     # Set the input parameters
@@ -101,222 +101,225 @@ for run in range(param_values.shape[0]):
         #     # Otherwise, assume the input parameters are global variables
         #     netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
-    netlogo.command('set Rule-set "New"')
-    netlogo.command('set culture-condition "clustered"')
-    #netlogo.command('set cluster-size 1')
-    netlogo.command('random-seed 21973')
-    netlogo.command('setup')
-    netlogo.repeat_command('go', 350)
-    # Run for 350 ticks to ensure model has finished running.
+    for j, size in enumerate(cluster_size):
+        netlogo.command('set Rule-set "New"')
+        netlogo.command('set culture-condition "clustered"')
+        netlogo.command('set cluster-size {}'.format(size))
+        netlogo.command('random-seed 21973')
+        netlogo.command('setup')
+        netlogo.repeat_command('go', 350)
+        # Run for 350 ticks to ensure model has finished running.
 
-    cyst_num = netlogo.report('num-cysts')
-    cyst_num_int = np.array(cyst_num, dtype=int, ndmin=2)
+        cyst_num = netlogo.report('num-cysts')
+        cyst_num_int = np.array(cyst_num, dtype=int, ndmin=2)
 
-    differentiated = netlogo.report('count cells with [color = green]')
-    pluripotent = netlogo.report('count cells with [color = red]')
-    total_cells = netlogo.report('count cells')
-    total_cells_int = np.array(total_cells, dtype=int, ndmin=1)
+        differentiated = netlogo.report('count cells with [color = green]')
+        pluripotent = netlogo.report('count cells with [color = red]')
+        total_cells = netlogo.report('count cells')
+        total_cells_int = np.array(total_cells, dtype=int, ndmin=1)
 
-    print(total_cells_int)
-    xcor = netlogo.report('map [s -> [xcor] of s] sort cells')
-    ycor = netlogo.report('map [s -> [ycor] of s] sort cells')
-    cell_id = netlogo.report('map [s -> [who] of s] sort cells')
-    group_id = netlogo.report('map [s -> [group-id] of s] sort cells')
-    xmax_grid = netlogo.report('max-pxcor')
-    xmin_grid = netlogo.report('min-pxcor')
-    ymax_grid = netlogo.report('max-pycor')
-    ymin_grid = netlogo.report('min-pycor')
+        print(total_cells_int)
+        xcor = netlogo.report('map [s -> [xcor] of s] sort cells')
+        ycor = netlogo.report('map [s -> [ycor] of s] sort cells')
+        cell_id = netlogo.report('map [s -> [who] of s] sort cells')
+        group_id = netlogo.report('map [s -> [group-id] of s] sort cells')
+        xmax_grid = netlogo.report('max-pxcor')
+        xmin_grid = netlogo.report('min-pxcor')
+        ymax_grid = netlogo.report('max-pycor')
+        ymin_grid = netlogo.report('min-pycor')
 
 
-    cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1))
-    cir_x.fill(np.nan)
-    # -1 because the last value of cyst_num in Netlogo does not count
-    cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1))
-    cir_y.fill(np.nan)
-    circle_area = []
-    circle_perimeter = []
-    cyst_roundness = []
-    bad_cysts = 0
-    diff_cyst = 0
-    pluri_cyst = 0
-    asym_cyst = 0
-    bad_asym_cyst = 0
-    good_cyst = 0
-    num_cells_in_cyst = []
-    for j in range(1, (int(cyst_num_int[0]))):
-        n = 0
-        pointList = []
-        cyst_size = netlogo.report('count cells with [group-id = {}]'.format(j))
-        pluripotent_cells_in_cyst = netlogo.report('count (cells with [group-id = {} and color = red])'.format(j))
-        differentiated_cells_in_cyst = netlogo.report('count (cells with [group-id = {} and color = green])'.format(j))
-        # Eliminate cysts that have lumen with two group-ids
-        bad_cyst = netlogo.report('count (lumen with [group-id = {0} and any? '
-                                  'lumen in-radius 1.5 with [group-id != {1}]])'.format(j, j))
-        # Eliminate touching cysts where the cells in the boundary are shared
-        bad_cysts2 = netlogo.report('count (cells with [group-id = {0} and any? '
-                                    'cells in-radius 1.5 with [group-id != {1}]])'.format(j, j))
-        # Eliminate incomplete cysts touching the border
-        bad_cyst4 = netlogo.report('count (cells with [group-id = {} and '
-                                   '(count cells in-radius 1.5 < 2)])'.format(j))
+        cir_x = np.zeros((len(xcor), int(cyst_num_int[0])-1))
+        cir_x.fill(np.nan)
+        # -1 because the last value of cyst_num in Netlogo does not count
+        cir_y = np.zeros((len(xcor), int(cyst_num_int[0])-1))
+        cir_y.fill(np.nan)
+        circle_area = []
+        circle_perimeter = []
+        cyst_roundness = []
+        bad_cysts = 0
+        diff_cyst = 0
+        pluri_cyst = 0
+        asym_cyst = 0
+        bad_asym_cyst = 0
+        good_cyst = 0
+        num_cells_in_cyst = []
+        for j in range(1, (int(cyst_num_int[0]))):
+            n = 0
+            pointList = []
+            cyst_size = netlogo.report('count cells with [group-id = {}]'.format(j))
+            pluripotent_cells_in_cyst = netlogo.report('count (cells with [group-id = {} and color = red])'.format(j))
+            differentiated_cells_in_cyst = netlogo.report('count (cells with [group-id = {} and color = green])'.format(j))
+            # Eliminate cysts that have lumen with two group-ids
+            bad_cyst = netlogo.report('count (lumen with [group-id = {0} and any? '
+                                      'lumen in-radius 1.5 with [group-id != {1}]])'.format(j, j))
+            # Eliminate touching cysts where the cells in the boundary are shared
+            bad_cysts2 = netlogo.report('count (cells with [group-id = {0} and any? '
+                                        'cells in-radius 1.5 with [group-id != {1}]])'.format(j, j))
+            # Eliminate incomplete cysts touching the border
+            bad_cyst4 = netlogo.report('count (cells with [group-id = {} and '
+                                       '(count cells in-radius 1.5 < 2)])'.format(j))
 
-        # Test if the cyst has been numbered incorrectly because there is one cyst inside another:
-        if pluripotent_cells_in_cyst >= 1 and differentiated_cells_in_cyst >= 1:
-            bad_cyst3 = netlogo.report('count (cells with [group-id = {} and color = green and '
-                                       '(count cells in-radius 1.5 with [color = red] = 1)])'.format(j))
-        else:
-            bad_cyst3 = 2
-
-        if bad_cyst == 0 and bad_cysts2 == 0 and bad_cyst4 == 0 and bad_cyst3 >= 1 and cyst_size > 0:
-            good_cyst += 1
-            num_cells_in_cyst.append(cyst_size)
-
-            if pluripotent_cells_in_cyst == 0:
-                diff_cyst += 1
-            elif differentiated_cells_in_cyst == 0:
-                pluri_cyst += 1
+            # Test if the cyst has been numbered incorrectly because there is one cyst inside another:
+            if pluripotent_cells_in_cyst >= 1 and differentiated_cells_in_cyst >= 1:
+                bad_cyst3 = netlogo.report('count (cells with [group-id = {} and color = green and '
+                                           '(count cells in-radius 1.5 with [color = red] = 1)])'.format(j))
             else:
-                # if the cyst has alternating red and green
-                bad_asym1 = netlogo.report('count (cells with [group-id = {} and color = red and '
-                                           '(count cells in-radius 1.5 with [color = green] > 1)])'.format(j))
-                bad_asym2 = netlogo.report('count (cells with [group-id = {} and color = green and '
-                                           '(count cells in-radius 1.5 with [color = red] > 1)])'.format(j))
+                bad_cyst3 = 2
 
-                if bad_asym1 == 0 and bad_asym2 == 0:
-                    asym_cyst += 1
+            if bad_cyst == 0 and bad_cysts2 == 0 and bad_cyst4 == 0 and bad_cyst3 >= 1 and cyst_size > 0:
+                good_cyst += 1
+                num_cells_in_cyst.append(cyst_size)
+
+                if pluripotent_cells_in_cyst == 0:
+                    diff_cyst += 1
+                elif differentiated_cells_in_cyst == 0:
+                    pluri_cyst += 1
                 else:
-                    bad_asym_cyst += 1
+                    # if the cyst has alternating red and green
+                    bad_asym1 = netlogo.report('count (cells with [group-id = {} and color = red and '
+                                               '(count cells in-radius 1.5 with [color = green] > 1)])'.format(j))
+                    bad_asym2 = netlogo.report('count (cells with [group-id = {} and color = green and '
+                                               '(count cells in-radius 1.5 with [color = red] > 1)])'.format(j))
 
-            # add code here to limit this to cells with this group_id and touching lumen
-            for k, num in enumerate(group_id):
-                if j == num and netlogo.report('[count lumen in-radius 1.5] of cells with [who = {}]'.format(cell_id[k])) > 0:
-                    cir_x[n, j-1] = xcor[k]
-                    cir_y[n, j-1] = ycor[k]
-                    pnt = (round(xcor[k], 1), round(ycor[k], 1))
-                    pointList.append(pnt)
-                    n = n + 1
+                    if bad_asym1 == 0 and bad_asym2 == 0:
+                        asym_cyst += 1
+                    else:
+                        bad_asym_cyst += 1
 
-            p_list = list(pointList)
+                # add code here to limit this to cells with this group_id and touching lumen
+                for k, num in enumerate(group_id):
+                    if j == num and netlogo.report('[count lumen in-radius 1.5] of cells with [who = {}]'.format(cell_id[k])) > 0:
+                        cir_x[n, j-1] = xcor[k]
+                        cir_y[n, j-1] = ycor[k]
+                        pnt = (round(xcor[k], 1), round(ycor[k], 1))
+                        pointList.append(pnt)
+                        n = n + 1
 
-            if len(pointList) > 2:
-                # Input list of points
-                points = pointList
-                # compute centroid
-                cent=(sum([p[0] for p in points])/len(points),sum([p[1] for p in points])/len(points))
-                # sort by polar angle
-                points.sort(key=lambda p: math.atan2(p[1]-cent[1],p[0]-cent[0]))
-                poly = Polygon(points)
-                # plot points
-                #pylab.scatter([p[0] for p in points],[p[1] for p in points])
-                #pylab.gca().add_patch(patches.Polygon(points,closed=True,fill=True))
-                #pylab.grid()
-                #pylab.show()
-                roundness = (4*np.pi*poly.area)/(poly.length*poly.length)
-                circle_area.append(poly.area)
-                circle_perimeter.append(poly.length)
-                cyst_roundness.append(roundness)
+                p_list = list(pointList)
 
+                if len(pointList) > 2:
+                    # Input list of points
+                    points = pointList
+                    # compute centroid
+                    cent=(sum([p[0] for p in points])/len(points),sum([p[1] for p in points])/len(points))
+                    # sort by polar angle
+                    points.sort(key=lambda p: math.atan2(p[1]-cent[1],p[0]-cent[0]))
+                    poly = Polygon(points)
+                    # plot points
+                    #pylab.scatter([p[0] for p in points],[p[1] for p in points])
+                    #pylab.gca().add_patch(patches.Polygon(points,closed=True,fill=True))
+                    #pylab.grid()
+                    #pylab.show()
+                    roundness = (4*np.pi*poly.area)/(poly.length*poly.length)
+                    circle_area.append(poly.area)
+                    circle_perimeter.append(poly.length)
+                    cyst_roundness.append(roundness)
+
+            else:
+                bad_cysts += 1
+
+        if len(num_cells_in_cyst) == 0:
+            total_cyst_number.append(np.nan)
+            num_bad_cysts.append(np.nan)
+            max_cyst_number.append(np.nan)
+            min_cyst_number.append(np.nan)
+            avg_cyst_number.append(np.nan)
+
+            num_pluripotent_cysts.append(np.nan)
+            num_differentiated_cysts.append(np.nan)
+            num_asymmetric_cysts.append(np.nan)
+
+            Avg_round = np.nan
+            Max_round = np.nan
+            Min_round = np.nan
+
+
+            min_roundness.append(Min_round)
+            max_roundness.append(Max_round)
+            avg_roundness.append(Avg_round)
+
+            results.loc[run_count, 'num-cells'] = netlogo.report('num-cells')
+            results.loc[run_count, 'cluster-size'] = netlogo.report('cluster-size')
+            results.loc[run_count, 'max-divisions'] = netlogo.report('max-divisions')
+            results.loc[run_count, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
+            results.loc[run_count, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
+            results.loc[run_count, 'num-diff-ind'] = netlogo.report('num-diff-ind')
+            results.loc[run_count, 'cycles-diff-ind'] = netlogo.report('cycles-diff-ind')
+            results.loc[run_count, 'undiff-num-inhibition'] = netlogo.report('undiff-num-inhibition')
+            results.loc[run_count, 'Num Cysts'] = total_cyst_number[run_count]
+            results.loc[run_count, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
+            results.loc[run_count, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
+            results.loc[run_count, 'Num Differentiated Cysts'] = num_differentiated_cysts[run_count]
+            results.loc[run_count, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run_count]
+            results.loc[run_count, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run_count]
+
+            continue
+
+        total_cyst_number.append(good_cyst)
+        num_bad_cysts.append(bad_cysts)
+        max_cyst_number.append(np.max(num_cells_in_cyst))
+        min_cyst_number.append(np.min(num_cells_in_cyst))
+        avg_cyst_number.append(np.average(num_cells_in_cyst))
+
+        num_pluripotent_cysts.append(pluri_cyst)
+        num_differentiated_cysts.append(diff_cyst)
+        num_asymmetric_cysts.append(asym_cyst)
+
+        print(num_bad_cysts)
+
+        if len(cyst_roundness) > 0:
+            Avg_round = np.nanmean(cyst_roundness)
+            Max_round = np.max(cyst_roundness)
+            Min_round = np.min(cyst_roundness)
+
+            min_roundness.append(Min_round)
+            max_roundness.append(Max_round)
+            avg_roundness.append(Avg_round)
         else:
-            bad_cysts += 1
+            min_roundness.append(np.nan)
+            max_roundness.append(np.nan)
+            avg_roundness.append(np.nan)
 
-    if len(num_cells_in_cyst) == 0:
-        total_cyst_number.append(np.nan)
-        num_bad_cysts.append(np.nan)
-        max_cyst_number.append(np.nan)
-        min_cyst_number.append(np.nan)
-        avg_cyst_number.append(np.nan)
+        # For each model run, give these results:
+        results.loc[run_count, 'num-cells'] = netlogo.report('num-cells')
+        results.loc[run_count, 'cluster-size'] = netlogo.report('cluster-size')
+        results.loc[run_count, 'max-divisions'] = netlogo.report('max-divisions')
+        results.loc[run_count, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
+        results.loc[run_count, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
+        results.loc[run_count, 'num-diff-ind'] = netlogo.report('num-diff-ind')
+        results.loc[run_count, 'cycles-diff-ind'] = netlogo.report('cycles-diff-ind')
+        results.loc[run_count, 'undiff-num-inhibition'] = netlogo.report('undiff-num-inhibition')
+        results.loc[run_count, 'Num Cysts'] = total_cyst_number[run]
+        results.loc[run_count, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
+        results.loc[run_count, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
+        results.loc[run_count, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
+        results.loc[run_count, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
+        results.loc[run_count, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
 
-        num_pluripotent_cysts.append(np.nan)
-        num_differentiated_cysts.append(np.nan)
-        num_asymmetric_cysts.append(np.nan)
+        plating_density = netlogo.report('num-cells')
+        clusters = netlogo.report('cluster-size')
+        percentage_pluripotent = num_pluripotent_cysts[run]/total_cyst_number[run]*100
+        percentage_differentiated = num_differentiated_cysts[run]/total_cyst_number[run]*100
 
-        Avg_round = np.nan
-        Max_round = np.nan
-        Min_round = np.nan
+        if num_asymmetric_cysts[run_count] > 0 or (percentage_pluripotent >= 90 and clusters == 1) or (percentage_differentiated >= 90 and clusters == 2):
+            good_results.loc[run_num, 'num-cells'] = netlogo.report('num-cells')
+            good_results.loc[run_num, 'cluster-size'] = netlogo.report('cluster-size')
+            good_results.loc[run_num, 'max-divisions'] = netlogo.report('max-divisions')
+            good_results.loc[run_num, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
+            good_results.loc[run_num, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
+            good_results.loc[run_num, 'num-diff-ind'] = netlogo.report('num-diff-ind')
+            good_results.loc[run_num, 'cycles-diff-ind'] = netlogo.report('cycles-diff-ind')
+            good_results.loc[run_num, 'undiff-num-inhibition'] = netlogo.report('undiff-num-inhibition')
+            good_results.loc[run_num, 'Num Cysts'] = total_cyst_number[run]
+            good_results.loc[run_num, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
+            good_results.loc[run_num, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
+            good_results.loc[run_num, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
+            good_results.loc[run_num, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
+            good_results.loc[run_num, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
+            run_num += 1
 
-
-        min_roundness.append(Min_round)
-        max_roundness.append(Max_round)
-        avg_roundness.append(Avg_round)
-
-        results.loc[run, 'num-cells'] = netlogo.report('num-cells')
-        results.loc[run, 'cluster-size'] = netlogo.report('cluster-size')
-        results.loc[run, 'max-divisions'] = netlogo.report('max-divisions')
-        results.loc[run, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
-        results.loc[run, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
-        results.loc[run, 'num-diff-ind'] = netlogo.report('num-diff-ind')
-        results.loc[run, 'cycles-diff-ind'] = netlogo.report('cycles-diff-ind')
-        results.loc[run, 'undiff-num-inhibition'] = netlogo.report('undiff-num-inhibition')
-        results.loc[run, 'Num Cysts'] = total_cyst_number[run]
-        results.loc[run, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
-        results.loc[run, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
-        results.loc[run, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
-        results.loc[run, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
-        results.loc[run, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
-
-        continue
-
-    total_cyst_number.append(good_cyst)
-    num_bad_cysts.append(bad_cysts)
-    max_cyst_number.append(np.max(num_cells_in_cyst))
-    min_cyst_number.append(np.min(num_cells_in_cyst))
-    avg_cyst_number.append(np.average(num_cells_in_cyst))
-
-    num_pluripotent_cysts.append(pluri_cyst)
-    num_differentiated_cysts.append(diff_cyst)
-    num_asymmetric_cysts.append(asym_cyst)
-
-    print(num_bad_cysts)
-
-    if len(cyst_roundness) > 0:
-        Avg_round = np.nanmean(cyst_roundness)
-        Max_round = np.max(cyst_roundness)
-        Min_round = np.min(cyst_roundness)
-
-        min_roundness.append(Min_round)
-        max_roundness.append(Max_round)
-        avg_roundness.append(Avg_round)
-    else:
-        min_roundness.append(np.nan)
-        max_roundness.append(np.nan)
-        avg_roundness.append(np.nan)
-
-    # For each model run, give these results:
-    results.loc[run, 'num-cells'] = netlogo.report('num-cells')
-    results.loc[run, 'cluster-size'] = netlogo.report('cluster-size')
-    results.loc[run, 'max-divisions'] = netlogo.report('max-divisions')
-    results.loc[run, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
-    results.loc[run, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
-    results.loc[run, 'num-diff-ind'] = netlogo.report('num-diff-ind')
-    results.loc[run, 'cycles-diff-ind'] = netlogo.report('cycles-diff-ind')
-    results.loc[run, 'undiff-num-inhibition'] = netlogo.report('undiff-num-inhibition')
-    results.loc[run, 'Num Cysts'] = total_cyst_number[run]
-    results.loc[run, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
-    results.loc[run, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
-    results.loc[run, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
-    results.loc[run, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
-    results.loc[run, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
-
-    plating_density = netlogo.report('num-cells')
-    clusters = netlogo.report('cluster-size')
-    percentage_pluripotent = num_pluripotent_cysts[run]/total_cyst_number[run]*100
-    percentage_differentiated = num_differentiated_cysts[run]/total_cyst_number[run]*100
-
-    if num_asymmetric_cysts[run] > 0 or (percentage_pluripotent >= 90 and clusters == 1) or (percentage_differentiated >= 90 and clusters == 2):
-        good_results.loc[run_num, 'num-cells'] = netlogo.report('num-cells')
-        good_results.loc[run_num, 'cluster-size'] = netlogo.report('cluster-size')
-        good_results.loc[run_num, 'max-divisions'] = netlogo.report('max-divisions')
-        good_results.loc[run_num, 'num-matrix-diff'] = netlogo.report('num-matrix-diff')
-        good_results.loc[run_num, 'cycles-diff-matrix'] = netlogo.report('cycles-diff-matrix')
-        good_results.loc[run_num, 'num-diff-ind'] = netlogo.report('num-diff-ind')
-        good_results.loc[run_num, 'cycles-diff-ind'] = netlogo.report('cycles-diff-ind')
-        good_results.loc[run_num, 'undiff-num-inhibition'] = netlogo.report('undiff-num-inhibition')
-        good_results.loc[run_num, 'Num Cysts'] = total_cyst_number[run]
-        good_results.loc[run_num, 'Num Differentiated'] = netlogo.report('count cells with [color = green]')
-        good_results.loc[run_num, 'Num Pluripotent'] = netlogo.report('count cells with [color = red]')
-        good_results.loc[run_num, 'Num Differentiated Cysts'] = num_differentiated_cysts[run]
-        good_results.loc[run_num, 'Num Pluripotent Cysts'] = num_pluripotent_cysts[run]
-        good_results.loc[run_num, 'Num Asymmetric Cysts'] = num_asymmetric_cysts[run]
-        run_num += 1
+        run_count += 1
 
 
 
@@ -330,9 +333,11 @@ elapsed
 
 print(results.head(6))
 
-results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered1_21973_1_10_cycle.csv')
+# results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered1_21973_1_10_cycle_3_div.csv')
 
-good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered1_21973_1_10_cycle.csv')
+# good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered1_21973_1_10_cycle_3_div.csv')
+
+
 # sns.set_style('white')
 # sns.set_context('talk')
 # fig, ax = plt.subplots(1,len(results.columns), sharey=True)
