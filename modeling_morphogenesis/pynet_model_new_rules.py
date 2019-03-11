@@ -50,7 +50,7 @@ problem = {
                [1, 5],
                [6, 10],
                [1, 5],
-               [6, 10],
+               [1, 5],
                [1, 6]
                ]
 
@@ -333,9 +333,9 @@ elapsed
 
 print(results.head(6))
 
-results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered_21973_6_10_cycle_nested.csv')
+results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered_21973_high_low_cycle_nested.csv')
 
-good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered_21973_6_10_cycle_nested.csv')
+good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered_21973_high_low_cycle_nested.csv')
 
 
 # sns.set_style('white')
