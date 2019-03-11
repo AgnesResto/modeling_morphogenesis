@@ -48,18 +48,18 @@ problem = {
                [10, 100],
                [1, 2],
                [1, 5],
-               [6, 10],
+               [1, 10],
                [1, 5],
-               [1, 5],
-               [1, 6]
+               [1, 10],
+               [1, 5]
                ]
 
 }
 
-n = 30
+n = 10
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
-param_values = np.around(param_values_noround, decimals=1)
+param_values = np.around(param_values_noround, decimals=0)
 param_values.shape
 
 print(param_values)
@@ -88,7 +88,7 @@ total_cyst_number = []
 # run_num = 0 # use this to index results in case there are some runs with no cyst formation
 run_num = 0
 run_count = 0
-cluster_size = [1, 1.5, 2, 2.5]
+cluster_size = [1, 2.5]
 
 for run in range(param_values.shape[0]):
     # Set the input parameters
@@ -102,8 +102,10 @@ for run in range(param_values.shape[0]):
         #     netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
     for j, size in enumerate(cluster_size):
-        netlogo.command('set Rule-set "New"')
+        netlogo.command('set Rule-set "Original"')
         netlogo.command('set culture-condition "clustered"')
+        netlogo.command('set diff-matrix? True')
+        netlogo.command('set diff-induction? True')
         netlogo.command('set cluster-size {}'.format(size))
         netlogo.command('random-seed 21973')
         netlogo.command('setup')
@@ -163,11 +165,11 @@ for run in range(param_values.shape[0]):
             # Test if the cyst has been numbered incorrectly because there is one cyst inside another:
             if pluripotent_cells_in_cyst >= 1 and differentiated_cells_in_cyst >= 1:
                 bad_cyst3 = netlogo.report('count (cells with [group-id = {} and color = green and '
-                                           '(count cells in-radius 1.5 with [color = red] = 1)])'.format(j))
+                                           '(count cells in-radius 1.5 with [color = red] = 3)])'.format(j))
             else:
                 bad_cyst3 = 2
 
-            if bad_cyst == 0 and bad_cysts2 == 0 and bad_cyst4 == 0 and bad_cyst3 >= 1 and cyst_size > 0:
+            if bad_cyst == 0 and bad_cysts2 == 0 and bad_cyst4 == 0 and cyst_size > 0: #and bad_cyst3 >= 1 and cyst_size > 0:
                 good_cyst += 1
                 num_cells_in_cyst.append(cyst_size)
 
@@ -302,7 +304,7 @@ for run in range(param_values.shape[0]):
         percentage_pluripotent = num_pluripotent_cysts[run]/total_cyst_number[run]*100
         percentage_differentiated = num_differentiated_cysts[run]/total_cyst_number[run]*100
 
-        if num_asymmetric_cysts[run_count] > 0 or (percentage_pluripotent >= 80 and clusters == 2) or (percentage_differentiated >= 80 and clusters == 1):
+        if num_asymmetric_cysts[run_count] > 0 or (percentage_pluripotent >= 80 and clusters >= 2) or (percentage_differentiated >= 80 and clusters <= 1.5):
             good_results.loc[run_num, 'num-cells'] = netlogo.report('num-cells')
             good_results.loc[run_num, 'cluster-size'] = netlogo.report('cluster-size')
             good_results.loc[run_num, 'max-divisions'] = netlogo.report('max-divisions')
@@ -333,9 +335,9 @@ elapsed
 
 print(results.head(6))
 
-results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_clustered_21973_high_low_cycle_nested.csv')
+results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_original_clustered_21973_nested.csv')
 
-good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_clustered_21973_high_low_cycle_nested.csv')
+good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_original_clustered_21973_nested.csv')
 
 
 # sns.set_style('white')

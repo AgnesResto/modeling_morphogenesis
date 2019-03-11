@@ -70,8 +70,8 @@ globals [
 
 to setup
   ;;random-seed 89942
-  ;;random-seed 22222
-  ;;random-seed 21973
+  ;; random-seed 22222
+  random-seed 21973
   clear-all
   if culture-condition = "embedded"
   [make-embedded-culture]
@@ -2238,7 +2238,7 @@ SWITCH
 198
 diff-matrix?
 diff-matrix?
-1
+0
 1
 -1000
 
@@ -2251,7 +2251,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-6.0
+2.0
 1
 1
 NIL
@@ -2277,7 +2277,7 @@ num-diff-ind
 num-diff-ind
 0
 6
-6.0
+1.0
 1
 1
 NIL
@@ -2292,7 +2292,7 @@ cycles-diff-ind
 cycles-diff-ind
 1
 20
-2.0
+3.0
 1
 1
 NIL
@@ -2337,7 +2337,7 @@ num-cells
 num-cells
 0
 400
-127.0
+71.0
 1
 1
 NIL
@@ -2352,7 +2352,7 @@ undiff-num-inhibition
 undiff-num-inhibition
 1
 6
-5.0
+3.0
 1
 1
 NIL
@@ -2429,7 +2429,7 @@ max-divisions
 max-divisions
 1
 5
-3.0
+1.0
 1
 1
 NIL
