@@ -71,7 +71,7 @@ globals [
 to setup
   ;;random-seed 89942
   ;;random-seed 22222
-  random-seed 21973
+  ;; random-seed 21973
   ;;random-seed 50098
   ;;random-seed 25098
   clear-all
@@ -309,6 +309,26 @@ to go
   ]
 ]
   [if steady-state? = True [
+    ask patches [
+      ;; define neighborhood of patches
+      ifelse pxcor mod 2 = 0 [
+        set patch-neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
+      ][
+        set patch-neighbors-6 turtles-on patches at-points [[0 1] [1 1] [1  0] [0 -1] [-1  0] [-1 1]] ]
+    ]
+    ask matrix with [ycor < (max-pycor - 2) and ycor > (min-pycor + 2) and xcor > (min-pxcor + 2) and xcor < (max-pycor - 2)][
+      ;; define neighborhood of patches
+      ifelse pxcor mod 2 = 0 [
+        set matrix-neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
+      ][
+        set matrix-neighbors-6 turtles-on patches at-points [[0 1] [1 1] [1  0] [0 -1] [-1  0] [-1 1]] ]
+      if count cells-on matrix-neighbors-6 = 0 and count matrix-on matrix-neighbors-6 > 4
+      [
+        ifelse pxcor mod 2 = 0
+        [matrix-fill-even]
+        [matrix-fill-odd]
+      ]
+    ]
     find-cysts
     find-lumen
     make-cyst-id
@@ -321,6 +341,81 @@ to go
   ]
   tick
 end
+
+to matrix-fill-even
+  ifelse not any? matrix-on patch-at 0 1
+  [hatch-matrix 1 [set color white]
+    move-to patch-at 0 1
+    set ycor ycor - 0.5
+  ]
+  [
+    ifelse not any? matrix-on patch-at 1 0
+    [hatch-matrix 1 [set color white]
+      move-to patch-at 1 0]
+    [
+      ifelse not any? matrix-on patch-at 1 -1
+      [hatch-matrix 1 [set color white]
+        move-to patch-at 1 -1]
+      [
+        ifelse not any? matrix-on patch-at 0 -1
+        [hatch-matrix 1 [set color white]
+          move-to patch-at 0 -1
+          set ycor ycor - 0.5
+        ]
+        [
+          ifelse not any? matrix-on patch-at -1 -1
+          [hatch-matrix 1 [set color white]
+            move-to patch-at -1 -1]
+          [
+            if not any? matrix-on patch-at -1 0
+            [hatch-matrix 1 [set color white]
+              move-to patch-at -1 0]
+          ]
+        ]
+      ]
+    ]
+  ]
+end
+
+to matrix-fill-odd
+  ifelse not any? matrix-on patch-at 0 1
+    [hatch-matrix 1 [set color white]
+      move-to patch-at 0 1]
+  [
+    ifelse not any? matrix-on patch-at 1 1
+    [hatch-matrix 1 [set color white]
+      move-to patch-at 1 1
+      set ycor ycor - 0.5
+    ]
+    [
+      ifelse not any? matrix-on patch-at 1 0
+      [hatch-matrix 1 [set color white]
+        move-to patch-at 1 0
+        set ycor ycor - 0.5
+      ]
+      [
+        ifelse not any? matrix-on patch-at 0 -1
+        [hatch-matrix 1 [set color white]
+          move-to patch-at 0 -1]
+        [
+          ifelse not any? matrix-on patch-at -1 0
+          [hatch-matrix 1 [set color white]
+            move-to patch-at -1 0
+            set ycor ycor - 0.5
+          ]
+          [
+            if not any? matrix-on patch-at -1 1
+            [hatch-matrix 1 [set color white]
+              move-to patch-at -1 1
+              set ycor ycor - 0.5
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+end
+
 
 to refresh-neighbors
   ifelse pxcor mod 2 = 0 [
@@ -2080,7 +2175,7 @@ num-matrix-diff
 num-matrix-diff
 1
 6
-4.0
+3.0
 1
 1
 NIL
@@ -2106,7 +2201,7 @@ cycles-diff-matrix
 cycles-diff-matrix
 0
 20
-2.0
+6.0
 1
 1
 NIL
@@ -2132,7 +2227,7 @@ num-diff-ind
 num-diff-ind
 0
 6
-1.0
+2.0
 1
 1
 NIL
@@ -2192,7 +2287,7 @@ num-cells
 num-cells
 0
 400
-94.0
+90.0
 1
 1
 NIL
@@ -2284,7 +2379,7 @@ max-divisions
 max-divisions
 1
 5
-2.0
+1.0
 1
 1
 NIL
