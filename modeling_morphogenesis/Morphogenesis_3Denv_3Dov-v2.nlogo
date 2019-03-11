@@ -2175,7 +2175,7 @@ num-matrix-diff
 num-matrix-diff
 1
 6
-3.0
+1.0
 1
 1
 NIL
@@ -2287,7 +2287,7 @@ num-cells
 num-cells
 0
 400
-90.0
+91.0
 1
 1
 NIL
