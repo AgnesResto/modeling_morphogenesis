@@ -1,6 +1,6 @@
 breed [ cells cell ]
-breed [ matrix matri ]
-breed [ glass glas ]
+breed [ matrix a-matrix ]
+breed [ glass a-glass ]
 breed [ lumen a-lumen ]
 breed [ walker a-walker ]
 undirected-link-breed [ cell-links cell-link ]
@@ -47,6 +47,8 @@ matrix-own [
 
 patches-own [
   patch-neighbors-6
+  inhibitor
+  induction-chemical
 
 ]
 
@@ -192,7 +194,30 @@ to go
   ;;update counter for number of cycles in contact with matrix
   ifelse steady-state? = False and ticks < 300
   [
-
+    diffuse inhibitor (diffusion-rate / 100)
+    diffuse induction-chemical (diffusion-rate / 100)
+    ask patches
+    [
+      ifelse count matrix-here = 1
+      [
+        set inhibitor (inhibitor * (100 - degradation-rate-matrix) / 100)
+        set induction-chemical (induction-chemical * (100 - degradation-rate-matrix) / 100)
+      ]
+      [
+        ifelse count cells-here = 1
+        [
+          ifelse any? cells-here with [color = red]
+          [set inhibitor inhibitor-release]
+          [ if any? cells-here with [color = green]
+            [set induction-chemical induction-release]
+          ]
+        ]
+        [
+          set inhibitor (inhibitor * (100 - degradation-rate-liquid) / 100)
+          set induction-chemical (induction-chemical * (100 - degradation-rate-liquid) / 100)
+        ]
+      ]
+    ]
     ask cells [
       ifelse diffusion? = False
       [ if diff-matrix? = True and diff-induction? = False [
@@ -233,24 +258,22 @@ to go
         [
           if diff-matrix? = True and diff-induction? = False
           [
-            ifelse count matrix-on neighbors-6 >= num-matrix-diff
+            ifelse count matrix-on neighbors-6 >= num-matrix-diff and (sum [inhibitor] of patches in-radius 1.5 < inhibition-threshold)
             [set cycles-matrix-contact cycles-matrix-contact + 1]
             [ifelse cycles-matrix-contact = 0
               [set cycles-matrix-contact 0]
               [set cycles-matrix-contact cycles-matrix-contact - 1]
             ]
-            if ticks-matrix-differentiation < max-ticks-differentiation
-            [
-              if color = red [
-                if cycles-matrix-contact >= cycles-diff-matrix ;; and diffused inhibitor < threshold
-                [
-                  set color green
-                  set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
+            if color = red [
+              if cycles-matrix-contact >= cycles-diff-matrix ;; and diffused inhibitor < threshold
+              [
+                set color green
+                set ticks-matrix-differentiation ticks-matrix-differentiation + 1
               ]
             ]
           ]
           if diff-matrix? = True and diff-induction? = True [
-            ifelse count matrix-on neighbors-6 >= num-matrix-diff
+            ifelse count matrix-on neighbors-6 >= num-matrix-diff and (sum [inhibitor] of patches in-radius 1.5 < inhibition-threshold)
             [set cycles-matrix-contact cycles-matrix-contact + 1]
             [ifelse cycles-matrix-contact = 0
               [set cycles-matrix-contact 0]
@@ -261,7 +284,7 @@ to go
               [set color green]
               [set ticks-matrix-differentiation ticks-matrix-differentiation + 1]
             ]
-            ifelse count cells-on neighbors-6 with [color = green] >= num-diff-ind and color = red
+            ifelse (sum [induction-chemical] of patches in-radius 1.5 >= induction-threshold) and color = red and (sum [inhibitor] of patches in-radius 1.5 < inhibition-threshold)
             [set cycles-diff-contact cycles-diff-contact + 1
               if cycles-diff-contact >= cycles-diff-ind ;; and diffused inhibitor < threshold
               [set color green]]
@@ -301,6 +324,7 @@ to go
       if rule-set = "New"
       [
         ask cells [
+        set inhibitor inhibitor + inhibitor-release
         new-rules
         ifelse pxcor mod 2 = 0 [
           set neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
@@ -395,6 +419,7 @@ to new-rules
 ;    set neighbors-6 turtles-on patches at-points [[0 1] [1 0] [1 -1] [0 -1] [-1 -1] [-1 0]]
 ;  ][
 ;    set neighbors-6 turtles-on patches at-points [[0 1] [1 1] [1  0] [0 -1] [-1  0] [-1 1]] ]
+  refresh-neighbors
   if (pycor > min-pycor + 1) and (pycor < max-pycor - 1) and (pxcor > min-pxcor + 1) and (pxcor < max-pxcor - 1)
   [
     ifelse count cells-here = 1
@@ -627,7 +652,8 @@ to new-rules
                     [
                       ifelse not any? link-neighbors
                       [
-                        create-cell-links-with (cells-on neighbors-6) with [not link-neighbor? myself] [set color blue]
+                        create-cell-links-with (cells-on neighbors-6) with [not link-neighbor? myself] [set color orange]
+
                         ifelse pxcor mod 2 = 0
                         [rule2-even]
                         [rule2-odd]
@@ -644,7 +670,7 @@ to new-rules
                       ]
                     ]
                     [
-                      ifelse count cells-on neighbors-6 = 2 and count matrix-on neighbors-6 = 0
+                      ifelse count cells-on neighbors-6 >= 2 and count matrix-on neighbors-6 = 0
                       [
                         rule9
                       ]
@@ -1249,30 +1275,28 @@ to rule9 ;; if no matrix neighbors and only one cel neighbor, move to empty patc
   [
     ifelse any? patches in-radius 1.5 with [count cells in-radius 1.5 = 5 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
     [
+      if count cells-on neighbors-6 < 4
+      [
       move-to one-of patches in-radius 1.5 with [count cells in-radius 1.5 = 5 and (not any? turtles-here) and (not any? turtles-on patch-at 0 -0.5)]
       if pxcor mod 2 = 0 [set ycor ycor - 0.5]
+      ]
     ]
     [
       ifelse any? patches in-radius 1.5 with [count cells in-radius 1.5 = 4 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
       [
+        if count cells-on neighbors-6 < 3
+        [
         move-to one-of patches in-radius 1.5 with [count cells in-radius 1.5 = 4 and (not any? turtles-here) and (not any? turtles-on patch-at 0 -0.5)]
         if pxcor mod 2 = 0 [set ycor ycor - 0.5]
+        ]
       ]
       [
-        ifelse any? patches in-radius 1.5 with [count cells in-radius 1.5 = 3 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
+        if any? patches in-radius 1.5 with [count cells in-radius 1.5 = 3 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
         [
+          if count cells-on neighbors-6 < 2
+          [
           move-to one-of patches in-radius 1.5 with [count cells in-radius 1.5 = 3 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
           if pxcor mod 2 = 0 [set ycor ycor - 0.5]
-        ]
-        [
-          ifelse any? patches in-radius 1.5 with [count cells in-radius 1.5 = 2 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
-          [
-            move-to one-of patches in-radius 1.5 with [count cells in-radius 1.5 = 2 and not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
-            if pxcor mod 2 = 0 [set ycor ycor - 0.5]
-          ]
-          [
-            move-to one-of patches in-radius 1.5 with [not any? turtles-here and not any? turtles-on patch-at 0 -0.5]
-            if pxcor mod 2 = 0 [set ycor ycor - 0.5]
           ]
         ]
       ]
@@ -2454,7 +2478,7 @@ cluster-size
 cluster-size
 0.5
 4
-1.5
+1.0
 0.5
 1
 NIL
@@ -2470,6 +2494,111 @@ diffusion?
 1
 1
 -1000
+
+SLIDER
+1185
+655
+1362
+688
+inhibition-threshold
+inhibition-threshold
+0
+100
+81.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1185
+700
+1357
+733
+inhibitor-release
+inhibitor-release
+0
+100
+20.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1185
+750
+1372
+783
+diffusion-rate
+diffusion-rate
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+975
+655
+1172
+688
+degradation-rate-liquid
+degradation-rate-liquid
+0
+100
+77.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+970
+695
+1172
+728
+degradation-rate-matrix
+degradation-rate-matrix
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+975
+740
+1152
+773
+induction-threshold
+induction-threshold
+0
+100
+22.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+975
+790
+1147
+823
+induction-release
+induction-release
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
