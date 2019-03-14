@@ -1,6 +1,6 @@
-# Model Proposal for _[Project Name]_
+# Model Proposal for _hESC Morphogenesis_
 
-_Your Name_
+_Agnes M Resto_
 
 * Course ID: CMPLXSYS 530,
 * Course Title: Computer Modeling of Complex Systems
