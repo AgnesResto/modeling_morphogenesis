@@ -33,12 +33,6 @@ _The model will seek to understand two key processes of hESC morphogenesis: (1) 
 ****
 &nbsp; 
 ### 1) Environment
-_Description of the environment in your model. Things to specify *if they apply*:_
-
-* _Boundary conditions (e.g. wrapping, infinite, etc.)_
-* _Dimensionality (e.g. 1D, 2D, etc.)_
-* _List of environment-owned variables (e.g. resources, states, roughness)_
-* _List of environment-owned methods/procedures (e.g. resource production, state change, etc.)_
 
 _The model will be constructed in Netlogo in a 2D hexagonal grid with no wrapping._
 Environment-owned variables:
@@ -183,14 +177,8 @@ end
 &nbsp; 
 
 ### 2) Agents
- 
- _Description of the "agents" in the system. Things to specify *if they apply*:_
- 
-* _List of agent-owned variables (e.g. age, heading, ID, etc.)_
-* _List of agent-owned methods/procedures (e.g. move, consume, reproduce, die, etc.)_
 
-Agent	Variables	Procedures
-Cells	
+1) Cells	
 neighbors-6: stores information about the type of neighboring agents and their locations
 cycles-matrix-contact: how many ticks has a cell been in contact with matrix
 cycles-diff-contace: how many ticks has a cell been in contact with a differentiated cell
@@ -200,13 +188,13 @@ can-divide?: can the cell divide?
 group-id: identifies to which cyst the cell belongs to
 num-divisions: keeps track of how many times a cell has divided
 A cell can move, die, divide, consume matrix, make links to other cells, and differentiate
-Matrix	
+2) Matrix	
 Agents that are a part of the environment	Matrix can be consumed by cells and cause cells to differentiate
-Lumen	
+3) Lumen	
 These agents are used to identify the inner cavity of cysts	N/A
-Walker	
+4) Walker	
 This agent is created once the cysts form and is used to give a unique identifier to the lumen and cells of each cyst	Move, assign id to lumen from a cyst
-Cell-links	
+5) Cell-links	
 These are links formed between two cells that indicate the start of polarization.	N/A
 
 ```python
@@ -273,8 +261,6 @@ matrix-own [
 _The interaction topology is most similar to a CA neighborhood. The cells will only take actions and move within their local neighborhood. _
  
 **_Action Sequence_**
-
-_What does an agent, cell, etc. do on a given turn? Provide a step-by-step description of what happens on a given turn for each part of your model_
 
 1.	The cells check their variables with regards to differentiation (i.e. do they differentiate or stay pluripotent)
 2.	The cells check their local neighborhood and decide to move, die, consume matrix, divide, or differentiate.
