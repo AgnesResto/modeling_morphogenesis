@@ -68,6 +68,7 @@ globals [
   grid-x-pos
   grid-y-pos
   any-lumen-neighbors?
+  cyst-id
 ]
 
 to setup
@@ -75,6 +76,7 @@ to setup
   ;; random-seed 22222
   random-seed 21973
   clear-all
+  set cyst-id 0
   if culture-condition = "embedded"
   [make-embedded-culture]
   if culture-condition = "clustered"
@@ -397,12 +399,21 @@ to go
     find-cysts
     find-lumen
     make-cyst-id
-    make-cell-id
-    propagate-id
-    propagate-again
-    if all? lumen [group-id > 0]
-    [stop]
+    ifelse any? cells with [group-id < 1]
+    [
+      make-cell-id
+      propagate-id
+      propagate-again
     ]
+    [
+      if all? cells [group-id > 0]
+      [
+        find-multilumen
+        stop
+      ]
+    ]
+    ]
+
   ]
   tick
 end
@@ -2059,6 +2070,29 @@ to propagate-again
     ]
   ]
 end
+
+to find-multilumen
+  while [cyst-id <= num-cysts]
+  [
+    if any? cells with [group-id = cyst-id]
+    [
+      ask (cells with [group-id = cyst-id]) [
+        if count (cells in-radius 1.5) with [group-id != [group-id] of myself] > 0 and count matrix-on neighbors-6 = 0
+        [
+          let different-cells (cells in-radius 1.5) with [group-id != [group-id] of myself]
+          let dif-id [group-id] of one-of different-cells
+          ask (cells with [group-id = dif-id])
+          [set group-id [group-id] of myself]
+        ]
+      ]
+    ]
+    set cyst-id cyst-id + 1
+  ]
+end
+
+to find-thick-cysts
+
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 5
@@ -2361,7 +2395,7 @@ num-cells
 num-cells
 0
 400
-71.0
+339.0
 1
 1
 NIL
@@ -2478,7 +2512,7 @@ cluster-size
 cluster-size
 0.5
 4
-1.0
+1.5
 0.5
 1
 NIL
