@@ -71,7 +71,7 @@ globals [
 to setup
   ;;random-seed 89942
   ;;random-seed 22222
-  ;; random-seed 21973
+  random-seed 21973
   ;;random-seed 50098
   ;;random-seed 25098
   clear-all
