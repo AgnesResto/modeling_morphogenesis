@@ -56,7 +56,7 @@ problem = {
 
 }
 
-n = 10
+n = 5
 
 param_values_noround = saltelli.sample(problem, n, calc_second_order=True)
 param_values = np.around(param_values_noround, decimals=0)
@@ -88,7 +88,7 @@ total_cyst_number = []
 # run_num = 0 # use this to index results in case there are some runs with no cyst formation
 run_num = 0
 run_count = 0
-cluster_size = [1, 2.5]
+cluster_size = [1, 1.5, 2.5]
 
 for run in range(param_values.shape[0]):
     # Set the input parameters
@@ -102,12 +102,12 @@ for run in range(param_values.shape[0]):
         #     netlogo.command('set {0} {1}'.format(name, param_values[run, i]))
 
     for j, size in enumerate(cluster_size):
-        netlogo.command('set Rule-set "Original"')
+        netlogo.command('set Rule-set "New"')
         netlogo.command('set culture-condition "clustered"')
         netlogo.command('set diff-matrix? True')
         netlogo.command('set diff-induction? True')
         netlogo.command('set cluster-size {}'.format(size))
-        netlogo.command('random-seed 21973')
+        # netlogo.command('random-seed 21973')
         netlogo.command('setup')
         netlogo.repeat_command('go', 350)
         # Run for 350 ticks to ensure model has finished running.
@@ -160,7 +160,7 @@ for run in range(param_values.shape[0]):
                                         'cells in-radius 1.5 with [group-id != {1}]])'.format(j, j))
             # Eliminate incomplete cysts touching the border
             bad_cyst4 = netlogo.report('count (cells with [group-id = {} and '
-                                       '(count cells in-radius 1.5 < 2)])'.format(j))
+                                       '(count cells in-radius 1.5 < 3)])'.format(j))
 
             # Test if the cyst has been numbered incorrectly because there is one cyst inside another:
             if pluripotent_cells_in_cyst >= 1 and differentiated_cells_in_cyst >= 1:
@@ -335,9 +335,9 @@ elapsed
 
 print(results.head(6))
 
-results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/results_original_clustered_21973_nested.csv')
-
-good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_original_clustered_21973_nested.csv')
+results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/project_results2.csv')
+#
+good_results.to_csv('/Users/agnesresto/modeling_morphogenesis/modeling_morphogenesis/modeling_morphogenesis/good_project_results2.csv')
 
 
 # sns.set_style('white')
