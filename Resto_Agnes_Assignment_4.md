@@ -7,6 +7,9 @@ _Agnes M Resto_
 * Term: Winter, 2019
 
 
+*__LS COMMENTS__: This is a phenomenally well-developed and thought out project! I don't have a lot of specific feedback at this juncture, especially since you are so far along already than is standard for this course. You've gotten a huge amount done in a short amount of time, and it really is very impressive. Keep doing what you are doing, and if there is anything you would like help with or if you would just like to bounce around some ideas, don't hesitate to let me know. Can't wait to see what you end up with for your analyses!*
+
+
 
 &nbsp; 
 
@@ -320,3 +323,5 @@ amount of inductive chemical released by differentiated cells	undetermined
 Induction chemical threshold for differentiation	undetermined
 maximum number of divisions per cell	1-3
 *With regards to examining diffusion, I’ll be looking at the relationship between the parameters rather than actual quantitative values. 
+
+*__LS COMMENT:__ As stated above, fantastic job! 20/20*
